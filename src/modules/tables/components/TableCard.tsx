@@ -1,12 +1,12 @@
-import { DeviceTabletSpeakerIcon } from "@phosphor-icons/react";
-import { Button } from "../../../shared";
+import { CaretRightIcon, DeviceTabletSpeakerIcon } from "@phosphor-icons/react";
+import type { UUID } from "crypto";
 
 type TableCardProps = {
-  tableId: number;
+  tableId: UUID;
   name: string;
   status: "Disponible" | "Ocupada" | "Reservada";
   capacity: number;
-  onClick?: (tableId: number) => void;
+  onClick?: (tableId: UUID) => void;
 };
 
 export default function TableCard({
@@ -23,29 +23,35 @@ export default function TableCard({
   };
 
   const statusStyles = {
-    Disponible: "bg-green-200 text-green-800",
-    Ocupada: "bg-orange-200 text-orange-800",
-    Reservada: "bg-yellow-200 text-yellow-800",
+    Disponible: "bg-green-100 text-green-800",
+    Ocupada: "bg-orange-100 text-orange-800",
+    Reservada: "bg-yellow-100 text-yellow-800",
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 ring ring-gray-900/5">
-      <h3 className="flex items-center gap-2 mb-3 text-gray-900 text-xl font-medium tracking-tight">
-        <DeviceTabletSpeakerIcon size={32} weight="fill" />
-        {name}
-        <span
-          className={`text-xs font-bold rounded-4xl p-1 px-2 my-2 ${statusStyles[status]}`}
-        >
-          {status}
+    <div
+      className="bg-white group ring-1 ring-gray-200 rounded-xl p-4 cursor-pointer hover:ring-blue-500 transition-all duration-200 h-[200px] relative"
+      key={tableId}
+      onClick={handleClick}
+    >
+      <h3 className="flex items-center gap-2 mb-3 text-xl tracking-tight">
+        <span className="text-gray-950">
+          <DeviceTabletSpeakerIcon size={40} weight="thin" />
         </span>
+        {name}
       </h3>
-
+      <span
+        className={`text-xs rounded-4xl p-1 px-2 my-2 ${statusStyles[status]}`}
+      >
+        {status}
+      </span>
       <p className="text-gray-500 my-4 text-sm">
         Capacidad para {capacity} personas
       </p>
-      <Button variant="secondary" onClick={handleClick}>
-        Ver detalles
-      </Button>
+
+      <span className="text-gray-400 absolute bottom-4 right-4 transition-colors duration-200 group-hover:text-blue-500">
+        <CaretRightIcon size={24} />
+      </span>
     </div>
   );
 }

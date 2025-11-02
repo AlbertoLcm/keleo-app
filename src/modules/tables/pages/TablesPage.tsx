@@ -1,28 +1,65 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import TableCard from "../components/TableCard";
-import { ROUTES } from "../../../routes/paths";
-
-const mesas = [
-  { id: 1, status: "Disponible", capacity: 4, name: "Mesa 1" },
-  { id: 2, status: "Ocupada", capacity: 2, name: "Mesa 2" },
-  { id: 3, status: "Reservada", capacity: 6, name: "Mesa 3" },
-  { id: 4, status: "Disponible", capacity: 8, name: "Mesa 4" },
-  { id: 5, status: "Ocupada", capacity: 4, name: "Mesa 5" },
-  { id: 6, status: "Reservada", capacity: 2, name: "Mesa 6" },
-];
+import { Button, EmptyState, InputSearch } from "@/shared";
+import { DeviceTabletSpeakerIcon, PlusIcon } from "@phosphor-icons/react";
+import { ROUTES } from "@/routes/paths";
+import { useEffect, useState } from "react";
+import type { InfoMesa } from "../types";
+import api from "@/api/axios";
+import type { UUID } from "crypto";
+import SkeletonTableCard from "../components/SkeletonTable";
+import GridTables from "../components/GridTables";
 
 export default function TablesPage() {
   const navigate = useNavigate();
-  
-  return (
-    <div>
-      <section className="py-14 bg-white">
-        <div className="max-w-[1200px] mx-auto p-4">
-          <p className="text-gray-500 text-xl font-medium tracking-wide mb-2" title="Ventas del día" aria-label="Ventas del día" role="status" aria-live="polite" aria-busy="false" aria-atomic="true" data-testid="ventas-del-dia">Ventas del día</p>
-          <h1 className="text-5xl font-medium">Mesas del restaurante</h1>
-        </div>
-      </section>
-      <section className="max-w-[1200px] mx-auto px-4 py-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+  const { id_restaurante } = useParams<{ id_restaurante: UUID }>();
+
+  const [mesas, setMesas] = useState<InfoMesa[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchMesas() {
+      try {
+        const { data } = await api.get(`/restaurants/${id_restaurante}/tables`);
+        setMesas(data);
+      } catch (error) {
+        console.error("Error al obtener mesas:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id_restaurante) {
+      setLoading(true);
+      fetchMesas();
+    }
+  }, [id_restaurante]);
+
+  const renderTables = () => {
+    if (loading) {
+      return (
+        <GridTables>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonTableCard key={i} />
+          ))}
+        </GridTables>
+      );
+    }
+
+    if (mesas.length === 0) {
+      return (
+        <EmptyState
+          title="Aún no tienes mesas"
+          description="Crea tu primer mesa para comenzar a gestionar tus órdenes"
+          actionLabel="Crear la primera"
+          icon={<DeviceTabletSpeakerIcon size={80} weight="thin" />}
+          onAction={() => navigate(ROUTES.TABLES.NEW)}
+        />
+      );
+    }
+
+    return (
+      <GridTables>
         {mesas.map((mesa) => (
           <TableCard
             key={mesa.id}
@@ -30,10 +67,38 @@ export default function TablesPage() {
             name={mesa.name}
             status={mesa.status as "Disponible" | "Ocupada" | "Reservada"}
             capacity={mesa.capacity}
-            onClick={(id) => navigate(ROUTES.TABLES.DETAIL(id))}
+            onClick={(id) => navigate(`${id}`)}
           />
         ))}
+      </GridTables>
+    );
+  };
+
+  return (
+    <div>
+      <section className="pb-16 flex flex-col gap-4">
+        <h1 className="flex text-2xl sm:text-3xl text-gray-800">
+          Todas las mesas
+        </h1>
+        {/* Contenedor de búsqueda y botón */}
+        <div className="flex mt-4 flex-col sm:flex-row items-start gap-4 w-full sm:w-auto">
+          <div className="w-full sm:w-64">
+            <InputSearch
+              onSearch={(query) => console.log("Buscando:", query)}
+              placeholder="Buscar Mesa..."
+              size="md"
+              delay={500}
+              className="w-full"
+            />
+          </div>
+          <Button onClick={() => navigate(ROUTES.TABLES.NEW)}>
+            <PlusIcon size={20} />
+            <span className="ml-1">Añadir Mesa</span>
+          </Button>
+        </div>
       </section>
+
+      {renderTables()}
     </div>
   );
 }

@@ -1,3 +1,11 @@
 export { default as Button } from './components/Button';
 export { default as Modal } from './components/Modal';
 export { default as InputSearch } from './components/InputSearch';
+export { default as InputNumber } from './components/InputNumber';
+export { default as SideBar } from './components/SideBar'
+export { default as Avatar } from './components/Avatar'
+export { default as LayoutSidebar } from './components/LayoutSidebar'
+export { default as Container } from './components/Container'
+export { default as InputText } from './components/InputText'
+export { default as Breadcrumbs } from './components/Breadcrumbs'
+export { default as EmptyState } from './components/EmptyState'

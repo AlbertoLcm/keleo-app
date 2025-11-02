@@ -1,16 +1,22 @@
+import type { UUID } from "crypto";
+
 export const ROUTES = {
-  TABLES: {
-    LIST: "/tables",
-    DETAIL: (id: number | string) => `/tables/${id}`,
-  },
-  ORDERS: {
-    LIST: "/orders",
-    DETAIL: (id: number | string) => `/orders/${id}`,
-  },
-  PRODUCTS: {
-    LIST: "/products",
-    DETAIL: (id: number | string) => `/products/${id}`,
-  },
   LOGIN: "/login",
   SIGNUP: "/signup",
+
+  RESTAURANTS: { 
+    LIST: "/restaurants",
+    DETAIL: (id_restaurante: UUID | string = ":id_restaurante") => `/restaurants/${id_restaurante}`,
+    NEW: "/restaurants/new"
+  },
+  // Estas rutas ya no empiezan con "/"
+  DASHBOARD: { INDEX: "dashboard" },
+  EMPLOYEES: { LIST: "employees" },
+  MENU: { INDEX: "menu" },
+  TABLES: {
+    LIST: "tables",
+    DETAIL: (id: UUID | string = ":id_table") => `tables/${id}`,
+    NEW: "new"
+  },
+  CONFIG: "config",
 };
