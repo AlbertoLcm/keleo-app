@@ -21,7 +21,7 @@ export enum Role {
 }
 
 export interface User {
-  id: UUID
+  id: string
   name: string,
   lastname: string,
   email: string,
@@ -34,4 +34,5 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoggedIn: boolean;
+  verifyEmail: (token: string) => Promise<void>;
 }

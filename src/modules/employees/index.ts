@@ -1,0 +1,1 @@
+export { default as EmployessPage } from './pages/EmployeesPage'

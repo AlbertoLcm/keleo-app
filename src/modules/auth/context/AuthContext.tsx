@@ -11,14 +11,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate(ROUTES.LOGIN);
-  };
-
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('user');
@@ -56,8 +48,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(user);
   };
 
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate(ROUTES.LOGIN);
+  };
+
+  const verifyEmail = async (token: string) => {
+    const res = await api.post(`/auth/verify-email`, { token });
+
+    const { accessToken, user } = await res.data;
+    
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('user', JSON.stringify(user));
+    setUser(user);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, verifyEmail, isLoggedIn: !!user }}>
       {children}
     </AuthContext.Provider>
   );

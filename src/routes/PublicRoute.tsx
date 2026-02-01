@@ -10,7 +10,7 @@ const PublicRoute = ({ children }: { children: JSX.Element }) => {
   if (isLoggedIn) {
     // Si el usuario ya está logueado, redirige a la ruta principal
     // o a la que haya guardado en el state
-    const from = location.state?.from?.pathname || ROUTES.TABLES.LIST;
+    const from = location.state?.from?.pathname || ROUTES.RESTAURANTS.INDEX;
     return <Navigate to={from} replace />;
   }
 

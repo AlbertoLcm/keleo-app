@@ -1,11 +1,68 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  @apply bg-gray-50 text-gray-900;
+@theme {
+  /* ==================================================== */
+  /* Colores Keleo (Adaptados a OKLCH) */
+  /* ==================================================== */
+  --color-keleo-50: oklch(96.91% 0.016 293.76);  /* #f5f3ff */
+  --color-keleo-100: oklch(94.33% 0.028 294.59); /* #ede9fe */
+  --color-keleo-200: oklch(89.43% 0.055 293.28); /* #ddd6fe */
+  --color-keleo-500: oklch(60.56% 0.219 292.72); /* #8b5cf6 */ 
+  --color-keleo-600: oklch(54.13% 0.247 293.01); /* #7c3aed */ 
+  --color-keleo-700: oklch(49.07% 0.241 292.58); /* #6d28d9 */ 
+  --color-keleo-900: oklch(37.96% 0.178 293.74); /* #4c1d95 */  
+  
+  /* ==================================================== */
+  /* Colores Dark (Adaptados a OKLCH) */
+  /* ==================================================== */
+  --color-dark-bg: oklch(20.77% 0.040 265.75);     /* #0f172a */  
+  --color-dark-card: oklch(27.95% 0.037 260.03);   /* #1e293b */
+  --color-dark-text: oklch(98.42% 0.003 247.86);   /* #f8fafc */ 
+  --color-dark-border: oklch(37.17% 0.039 257.29); /* #334155 */
 }
 
 .recharts-wrapper:focus,
 .recharts-surface:focus,
 .recharts-layer:focus {
   Outline: none !important;
+}
+
+/* index.css */
+@layer base {
+  body {
+    /* Fondo por defecto (Light) */
+    @apply bg-gray-50 text-black transition-colors duration-300;
+    
+  }
+
+  /* Cuando el HTML tiene la clase 'dark', el body cambia */
+  :root.dark body {
+    @apply bg-dark-bg text-white;
+  }
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    /* border: 1px solid rgba(255, 255, 255, 0.5); */
+}
+.dark .glass-panel {
+    background: rgba(30, 41, 59, 0.7); /* Dark card color with opacity */
+    /* border: 1px solid rgba(255, 255, 255, 0.05); */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+button {
+  cursor: pointer;
+}
+button:active{
+  scale: calc(90%);
 }

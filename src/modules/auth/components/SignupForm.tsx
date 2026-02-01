@@ -1,4 +1,4 @@
-import { Button } from "@/shared";
+import { Button } from "@/modules/shared";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { Link } from "react-router";
 import { ROUTES } from "@/routes/paths";
@@ -60,7 +60,7 @@ export default function SignupForm() {
       <h2 className="text-2xl">Crear una cuenta</h2>
       <p className="text-gray-500 mt-2">
         ¿Ya tienes una cuenta?{" "}
-        <Link to={ROUTES.LOGIN} className="text-blue-500 hover:underline">
+        <Link to={ROUTES.LOGIN} className="text-violet-500 hover:underline">
           Ingresa aquí
         </Link>
       </p>
@@ -89,7 +89,7 @@ export default function SignupForm() {
               name="name"
               value={signupData.name}
               required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-violet-500"
               onChange={handleChange}
             />
           </div>
@@ -103,7 +103,7 @@ export default function SignupForm() {
               name="lastname"
               value={signupData.lastname}
               required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-violet-500"
               onChange={handleChange}
             />
           </div>
@@ -119,7 +119,7 @@ export default function SignupForm() {
             name="email"
             value={signupData.email}
             required
-            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-violet-500"
             onChange={handleChange}
           />
         </div>
@@ -134,12 +134,12 @@ export default function SignupForm() {
             name="password"
             value={signupData.password}
             required
-            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-4xl focus:outline-none focus:ring-2 focus:ring-violet-500"
             onChange={handleChange}
           />
         </div>
 
-        <Button variant="primary" full disabled={sendingForm}>
+        <Button variant="primary" disabled={sendingForm}>
           Crear Cuenta
         </Button>
       </form> 

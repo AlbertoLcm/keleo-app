@@ -1,16 +1,44 @@
-import type { UUID } from "crypto";
+export type TypeRestaurant = "restaurant" | "coffee" | "bar";
 
 export interface DataNewRestaurant {
-  name: string,
-  address: string,
-  phone: string,
-  logo_url: string,
+  name: string;
+  phone?: string;
+  type_restaurant: TypeRestaurant;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  logo_url?: string;
 }
 
 export interface Restaurant {
-  id: UUID,
-  name: string,
-  address: string,
-  phone: string,
-  logo_url: string
+  id: string;
+  name: string;
+  phone: string;
+  type_restaurant: TypeRestaurant;
+  address: string;
+  city: string;
+  postal_code: string;
+  logo_url: string;
+  tables_in_use: number;
+  total_tables: number;
+  daily_sales: number;
+  status: "open" | "closed";
+}
+
+export interface DashboardStats {
+  sales: {
+    total: number;
+    yesterdayTotal: number;
+    percentageComparation: number;
+  };
+  activeOrders: number;
+  staff: {
+    active: number;
+    total: number;
+    percentageOnline: number;
+  };
+  operationalPeriod: {
+    start: string;
+    end: string;
+  };
 }

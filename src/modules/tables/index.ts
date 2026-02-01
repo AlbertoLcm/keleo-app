@@ -1,8 +1,8 @@
-export { default as TableCard } from './components/TableCard';
-export { default as TablesPage } from './pages/TablesPage';
-export { default as TableDetailPage } from './pages/TableDetailPage';
-export { default as OrderStep1 } from './components/OrderStep1';
-export { default as OrderStep2 } from './components/OrderStep2';
-export { default as UpdateOrder } from './components/UpdateOrder';
-export { default as FinishOrder } from './components/FinishOrder';
-export { default as FormNewTable } from './components/FormNewTable';
+export { default as CardTable } from "./components/CardTable";
+export { default as GridCardsTables } from "./components/GridCardsTables";
+export { default as NewTableForm } from "./components/NewTableForm";
+export { default as TablesPage } from "./pages/TablesPage";
+export { default as CardTableSkeleton } from "./components/CardTableSkeleton";
+export { default as TableDetailPage } from "./pages/TableDetailPage";
+export { default as CardProduct } from "./components/CardProduct";
+export { default as GridCardsProducts } from "./components/GridCardsProducts";
