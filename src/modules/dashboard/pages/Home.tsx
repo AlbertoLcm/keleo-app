@@ -5,6 +5,7 @@ import {
   CalendarClock,
   ChevronRight,
   DollarSign,
+  Eye,
   FileChartLine,
   Flame,
   Plus,
@@ -12,65 +13,14 @@ import {
 } from "lucide-react";
 import StatCard from "../components/StatCard";
 import ShortcutButton from "../components/ShortcutButton";
-import { Container, StatusBadge, useHeaderAction } from "@/modules/shared";
-import { useEffect } from "react";
-
-// --- Types ---
-interface Order {
-  id: string;
-  table: string;
-  status: "pending" | "served" | "ready";
-  total: number;
-}
-
-interface TopItem {
-  name: string;
-  count: number;
-  revenue: number;
-  image: string;
-}
-
-// --- Mock Data ---
-const recentOrders: Order[] = [
-  { id: "#1024", table: "Mesa 4", status: "pending", total: 450.0 },
-  { id: "#1023", table: "Mesa 2", status: "served", total: 120.0 },
-  { id: "#1022", table: "Para Llevar", status: "ready", total: 85.0 },
-];
-
-const topItems: TopItem[] = [
-  {
-    name: "Hamburguesa Clásica",
-    count: 24,
-    revenue: 3200,
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=200",
-  },
-  {
-    name: "Bowl de Ensalada",
-    count: 18,
-    revenue: 1980,
-    image:
-      "https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?q=80&w=200",
-  },
-  {
-    name: "Cheesecake Fresa",
-    count: 12,
-    revenue: 960,
-    image:
-      "https://images.unsplash.com/photo-1579306194872-64d3b7bac4c2?q=80&w=200",
-  },
-];
-
-const chartData = [
-  { time: "12pm", value: 30, amount: "$1,200" },
-  { time: "2pm", value: 85, amount: "$3,500" },
-  { time: "4pm", value: 45, amount: "$1,800" },
-  { time: "6pm", value: 60, amount: "$2,100" },
-  { time: "8pm", value: 90, amount: "$4,100" },
-];
+import { LoadingScreen, StatusBadge, useHeaderAction } from "@/modules/shared";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router";
+import { getDashboardStats } from "../services/dashboard.service";
+import type { DashboardStats } from "../services/dashboard.service";
 
 const getBadgeColor = (
-  status: Order["status"],
+  status: DashboardStats["recentOrders"][number]["status"],
 ): "yellow" | "green" | "blue" => {
   switch (status) {
     case "pending":
@@ -85,7 +35,7 @@ const getBadgeColor = (
 };
 
 const getStatusText = (
-  status: Order["status"],
+  status: DashboardStats["recentOrders"][number]["status"],
 ): "En Cocina" | "Servido" | "Listo" => {
   switch (status) {
     case "pending":
@@ -99,13 +49,34 @@ const getStatusText = (
 
 const Dashboard: React.FC = () => {
   const { updateActionHeader } = useHeaderAction();
+  const { restaurantId } = useParams();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getDashboardStats(restaurantId);
+        setStats(data);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchStats();
+  }, [restaurantId]);
 
   useEffect(() => {
     updateActionHeader(
       <section className="flex justify-between w-full items-center">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="hidden md:flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <a
                 href="dashboard.html"
                 className="hover:text-keleo-600 transition"
@@ -117,7 +88,7 @@ const Dashboard: React.FC = () => {
                 Cafetería Central
               </span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mt-1">
+            <h1 className="text-base md:text-xl font-bold text-gray-900 dark:text-white mt-1">
               Panel de Control
             </h1>
           </div>
@@ -138,98 +109,82 @@ const Dashboard: React.FC = () => {
     return () => updateActionHeader(null);
   }, []);
 
+  if (isLoading || !stats) {
+    return (
+      <LoadingScreen />
+    );
+  }
+
   return (
-    <Container>
-      {/* ROW 1: Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Ventas Hoy"
-          value="$4,250"
-          icon={<DollarSign />}
-          color="green"
-          trend="+8% vs ayer"
-          trendUp={true}
-        />
+    <>
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="w-[85vw] sm:w-auto shrink-0 snap-center">
+          <StatCard
+            title="Ventas Hoy"
+            value={`$${stats.sales.total.toLocaleString()}`}
+            icon={<DollarSign />}
+            color="green"
+            trend={`${stats.sales.percentageComparation >= 0 ? '+' : ''}${stats.sales.percentageComparation}% vs ayer`}
+            trendUp={stats.sales.percentageComparation >= 0}
+          />
+        </div>
 
-        <StatCard
-          title="Mesas Activas"
-          value={
-            <>
-              8 <span className="text-sm font-normal text-gray-400">/ 12</span>
-            </>
-          }
-          icon={<Armchair />}
-          color="orange"
-          progress={66}
-        />
+        <div className="w-[85vw] sm:w-auto shrink-0 snap-center">
+          <StatCard
+            title="Mesas Activas"
+            value={
+              <>
+                {stats.activeTables.occupied}{" "}
+                <span className="text-sm font-normal text-gray-400">/ {stats.activeTables.total}</span>
+              </>
+            }
+            icon={<Armchair />}
+            color="orange"
+            progress={stats.activeTables.total > 0 ? (stats.activeTables.occupied / stats.activeTables.total) * 100 : 0}
+          />
+        </div>
 
-        <StatCard
-          title="Pedidos Cocina"
-          value="5"
-          icon={<Flame />}
-          color="red"
-          customContent={
-            <p className="text-xs text-red-500 font-medium animate-pulse flex items-center gap-1 mt-auto">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span> 2
-              con retraso 15m
-            </p>
-          }
-        />
+        <div className="w-[85vw] sm:w-auto shrink-0 snap-center">
+          <StatCard
+            title="Pedidos Cocina"
+            value={stats.kitchenOrders.toString()}
+            icon={<Flame />}
+            color="red"
+            customContent={
+              stats.kitchenOrders > 0 ? (
+                <p className="text-xs text-red-500 font-medium animate-pulse flex items-center gap-1 mt-auto">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Activos
+                </p>
+              ) : null
+            }
+          />
+        </div>
 
-        <StatCard
-          title="Staff Turno"
-          value="4"
-          icon={<CalendarClock />}
-          color="blue"
-          customContent={
-            <div className="flex -space-x-2 mt-auto">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white dark:border-dark-card"
-                ></div>
-              ))}
-            </div>
-          }
-        />
+        <div className="w-[85vw] sm:w-auto shrink-0 snap-center">
+          <StatCard
+            title="Staff Turno"
+            value={stats.staff.active.toString()}
+            icon={<CalendarClock />}
+            color="blue"
+            customContent={
+              <div className="flex items-center gap-2 mt-auto">
+                <div className="flex -space-x-2">
+                  {Array.from({ length: Math.min(stats.staff.active, 3) }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white dark:border-dark-card"
+                    ></div>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-400">/ {stats.staff.total} total</span>
+              </div>
+            }
+          />
+        </div>
       </div>
 
       {/* ROW 2: Graph & Shortcuts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* CHART SECTION */}
-        <div className="lg:col-span-2 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-gray-800 dark:text-white">
-              Rendimiento de Ventas
-            </h2>
-            <select className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-transparent rounded-lg text-xs px-2 py-1 text-gray-600 dark:text-gray-300 outline-none focus:ring-1 focus:ring-keleo-500">
-              <option>Hoy</option>
-              <option>Esta Semana</option>
-            </select>
-          </div>
-
-          <div className="flex-grow flex items-end justify-between gap-2 md:gap-4 h-48 px-2">
-            {chartData.map((item, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center gap-2 w-full group"
-              >
-                <div className="w-full bg-keleo-100 dark:bg-keleo-900/20 rounded-t-md relative h-32 flex items-end justify-center group-hover:bg-keleo-200 dark:group-hover:bg-keleo-900/40 transition-all cursor-pointer">
-                  <div
-                    className="w-full bg-keleo-500 rounded-t-md bar-animate relative"
-                    style={{ height: `${item.value}%` }}
-                  >
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition z-10 whitespace-nowrap">
-                      {item.amount}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[10px] text-gray-400">{item.time}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {/* SHORTCUTS */}
         <div className="bg-gradient-to-br from-keleo-600 to-indigo-600 rounded-2xl shadow-xl shadow-keleo-500/20 p-6 text-white relative overflow-hidden flex flex-col justify-center">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
@@ -252,12 +207,45 @@ const Dashboard: React.FC = () => {
             />
           </div>
         </div>
+        {/* CHART SECTION */}
+        <div className="lg:col-span-2 bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-bold text-gray-800 dark:text-white">
+              Rendimiento de Ventas
+            </h2>
+            <select className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-transparent rounded-lg text-xs px-2 py-1 text-gray-600 dark:text-gray-300 outline-none focus:ring-1 focus:ring-keleo-500">
+              <option>Hoy</option>
+              <option>Esta Semana</option>
+            </select>
+          </div>
+
+          <div className="flex-grow flex items-end justify-between gap-2 md:gap-4 h-48 px-2">
+            {stats.chartData.map((item, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center gap-2 w-full group"
+              >
+                <div className="w-full bg-keleo-100 dark:bg-keleo-900/20 rounded-t-md relative h-32 flex items-end justify-center group-hover:bg-keleo-200 dark:group-hover:bg-keleo-900/40 transition-all cursor-pointer">
+                  <div
+                    className="w-full bg-keleo-500 rounded-t-md bar-animate relative"
+                    style={{ height: `${item.value}%` }}
+                  >
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition z-10 whitespace-nowrap">
+                      {item.amount}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] text-gray-400">{item.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ROW 3: Tables & Top Selling */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Active Orders Table */}
-        <div className="lg:col-span-2 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 overflow-hidden">
+        <div className="lg:col-span-2 bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-white/50 dark:border-white/5 overflow-hidden">
           <div className="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
             <h2 className="font-bold text-gray-800 dark:text-white">
               Pedidos Recientes
@@ -281,68 +269,82 @@ const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                {recentOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition"
-                  >
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                      {order.id}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {order.table}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge
-                        color={getBadgeColor(order.status)}
-                        text={getStatusText(order.status)}
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-sm font-bold text-gray-800 dark:text-white">
-                      ${order.total.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-gray-400 hover:text-keleo-600 transition p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full">
-                        <i className="fas fa-eye"></i>
-                      </button>
+                {stats.recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm">
+                      No hay pedidos recientes
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  stats.recentOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-gray-50 dark:hover:bg-white/5 transition"
+                    >
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        {order.id}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        {order.table}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <StatusBadge
+                          color={getBadgeColor(order.status)}
+                          text={getStatusText(order.status)}
+                        />
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-gray-800 dark:text-white">
+                        ${order.total.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-gray-400 hover:text-keleo-600 transition p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full">
+                          <Eye size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Top Selling Items */}
-        <div className="bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6 h-full">
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6 h-full">
           <h3 className="font-bold text-gray-800 dark:text-white mb-4">
             Más Vendidos Hoy
           </h3>
           <div className="space-y-4">
-            {topItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-3 p-2 hover:bg-white/40 dark:hover:bg-white/5 rounded-xl transition cursor-pointer group"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 bg-cover bg-center shadow-sm"
-                  style={{ backgroundImage: `url('${item.image}')` }}
-                ></div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-keleo-600 transition">
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{item.count} unidades</p>
-                </div>
-                <span className="text-sm font-bold text-gray-800 dark:text-white">
-                  ${item.revenue.toLocaleString()}
-                </span>
+            {stats.topItems.length === 0 ? (
+              <div className="text-center text-gray-500 text-sm py-4">
+                No hay ventas registradas hoy
               </div>
-            ))}
+            ) : (
+              stats.topItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-2 hover:bg-white/40 dark:hover:bg-white/5 rounded-xl transition cursor-pointer group"
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 bg-cover bg-center shadow-sm"
+                    style={{ backgroundImage: `url('${item.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200"}')` }}
+                  ></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-keleo-600 transition line-clamp-1">
+                      {item.name}
+                    </p>
+                    <p className="text-xs text-gray-500">{item.count} unidades</p>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-white">
+                    ${item.revenue.toLocaleString()}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </Container>
+    </>
   );
 };
 

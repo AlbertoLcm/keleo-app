@@ -75,7 +75,7 @@ const MenuUser: React.FC = () => {
             }}
             ref={menuRef}
             className="
-              glass-panel absolute right-0 mt-3 w-64 origin-top-right rounded-xl overflow-hidden border shadow-2xl z-46
+              bg-white dark:bg-dark-card absolute right-0 mt-3 w-64 origin-top-right rounded-xl overflow-hidden border shadow-2xl z-46
              border-white/50 dark:border-white/5
             "
           >

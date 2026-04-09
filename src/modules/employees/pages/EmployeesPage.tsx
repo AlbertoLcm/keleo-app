@@ -1,233 +1,197 @@
+import { Users, Circle, Trophy, UserPlus } from "lucide-react";
+import { FilterTabs, MetricCard } from "@/modules/shared";
+import { EmployeeCard, NewEmployeeForm } from "../components";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router";
+import { getEmployees } from "../services/employee.service";
+import type { Employee } from "../models/employee.model";
+import { useHeaderAction, CardEmptyAdded } from "@/modules/shared";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
+
 const EmployeesPage = () => {
+  const { updateActionHeader } = useHeaderAction();
+  const { restaurantId } = useParams();
+
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const closeDrawer = () => setIsDrawerOpen(false);
+
+  useEffect(() => {
+    if (restaurantId) {
+      loadEmployees(restaurantId);
+    }
+  }, [restaurantId]);
+
+  const loadEmployees = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const data = await getEmployees(id);
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error loading employees:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const headerContent = useMemo(
+    () => (
+      <section className="flex justify-between w-full items-center">
+        <div className="flex flex-col">
+          <h1 className="text-base md:text-xl font-bold text-gray-900 dark:text-white">
+            Equipo
+          </h1>
+          <p className="hidden md:block text-xs text-gray-500 dark:text-gray-400">
+            Administra los accesos y roles de tu personal
+          </p>
+        </div>
+
+        <div className="flex">
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold"
+          >
+            <UserPlus size={20} />
+            <span className="hidden sm:inline">Nuevo Personal</span>
+          </button>
+        </div>
+      </section>
+    ),
+    [setIsDrawerOpen]
+  );
+
+  useEffect(() => {
+    updateActionHeader(headerContent);
+    return () => updateActionHeader(null);
+  }, [headerContent, updateActionHeader]);
+
+  const filteredEmployees = employees.filter(e => activeTab === null || e.role === activeTab);
+
   return (
     <>
-      <div className="flex items-center gap-4 mb-8 overflow-x-auto no-scrollbar pb-2">
-        <button className="px-5 py-2.5 bg-keleo-600 text-white rounded-xl shadow-md shadow-keleo-500/30 text-sm font-bold whitespace-nowrap transition transform hover:-translate-y-0.5">
-          Todos
-        </button>
-        <button className="px-5 py-2.5 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition hover:shadow-md">
-          Meseros
-        </button>
-        <button className="px-5 py-2.5 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition hover:shadow-md">
-          Cocina
-        </button>
-        <button className="px-5 py-2.5 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition hover:shadow-md">
-          Gerencia
-        </button>
-      </div>
+      <FilterTabs 
+        options={[
+          { id: null, label: "Todos" },
+          { id: "meseros", label: "Meseros" },
+          { id: "cocina", label: "Cocina" },
+          { id: "gerencia", label: "Gerencia" },
+        ]}
+        activeId={activeTab}
+        onChange={setActiveTab}
+        className="mb-8 pb-2 w-full md:w-auto"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-panel p-4 rounded-xl border border-white/50 dark:border-white/5 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Total Personal
-            </p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              18
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center">
-            <i className="fas fa-users"></i>
-          </div>
-        </div>
-        <div className="glass-panel p-4 rounded-xl border border-white/50 dark:border-white/5 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              En Turno Ahora
-            </p>
-            <p className="text-2xl font-bold text-green-500">
-              8 <span className="text-sm font-normal text-gray-400">/ 18</span>
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-500 flex items-center justify-center animate-pulse">
-            <i className="fas fa-circle text-[10px]"></i>
-          </div>
-        </div>
-        <div className="glass-panel p-4 rounded-xl border border-white/50 dark:border-white/5 flex items-center justify-between relative overflow-hidden group">
+        <MetricCard
+          className="bg-white dark:bg-dark-card"
+          title="Total Personal"
+          value={employees.length}
+          icon={<Users />}
+          color="blue"
+        />
+        <MetricCard
+          className="bg-white dark:bg-dark-card"
+          title="En Turno Ahora"
+          value={<>{employees.filter(e => e.is_online).length} <span className="text-sm font-normal text-gray-400">/ {employees.length}</span></>}
+          icon={<Circle size={10} className="fill-current" />}
+          color="green"
+          valueClassName="text-green-500"
+          iconContainerClassName="animate-pulse"
+        />
+        <MetricCard
+          className="bg-white dark:bg-dark-card overflow-hidden group"
+          title="Empleado del Mes"
+          value="Juan Pérez"
+          icon={<Trophy />}
+          color="yellow"
+          valueClassName="text-lg text-gray-800 dark:text-white"
+          iconContainerClassName="group-hover:rotate-12 transition"
+        >
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-transparent"></div>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Empleado del Mes
-            </p>
-            <p className="text-lg font-bold text-gray-800 dark:text-white">
-              Juan Pérez
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-500 flex items-center justify-center group-hover:rotate-12 transition">
-            <i className="fas fa-trophy"></i>
-          </div>
-        </div>
+        </MetricCard>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md rounded-2xl shadow-sm border border-l-4 border-l-green-500 border-t-white/50 border-r-white/50 border-b-white/50 dark:border-t-white/5 dark:border-r-white/5 dark:border-b-white/5 overflow-hidden hover:shadow-xl hover:shadow-keleo-500/5 transition duration-300 group">
-          <div className="p-5">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150"
-                  alt="Avatar"
-                  className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
-                />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-dark-card rounded-full"></span>
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 dark:text-white leading-tight">
-                  Juan Pérez
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Mesero Senior
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 dark:bg-white/5 rounded-xl p-2">
-              <div className="text-center border-r border-gray-200 dark:border-white/10">
-                <p className="text-[10px] text-gray-400 uppercase">
-                  Ventas Hoy
-                </p>
-                <p className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                  $2,450
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] text-gray-400 uppercase">Mesas</p>
-                <p className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                  4 Activas
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold">
-                En Turno
-              </span>
-              <div className="flex gap-2">
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-comment-alt"></i>
-                </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-ellipsis-v"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-keleo-600"></div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredEmployees.map((employee) => (
+            <EmployeeCard
+              key={employee.id}
+              name={`${employee.name} ${employee.lastname || ''}`.trim()}
+              role={
+                employee.role === 'meseros' ? 'Mesero' :
+                employee.role === 'cocina' ? 'Cocina' :
+                employee.role === 'gerencia' ? 'Gerencia' : employee.role
+              }
+              avatarUrl={employee.profile_image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=150"}
+              status={employee.is_online ? "active" : "inactive"}
+              statusText={employee.is_online ? "En Turno" : "Desconectado"}
+              stats={[
+                { label: "Rol", value: employee.role },
+                { label: "Email", value: employee.email, valueClassName: "truncate max-w-[100px]" }
+              ]}
+            />
+          ))}
 
-        <div className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md rounded-2xl shadow-sm border border-l-4 border-l-green-500 border-t-white/50 border-r-white/50 border-b-white/50 dark:border-t-white/5 dark:border-r-white/5 dark:border-b-white/5 overflow-hidden hover:shadow-xl hover:shadow-keleo-500/5 transition duration-300 group">
-          <div className="p-5">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=150"
-                  alt="Avatar"
-                  className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
-                />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-dark-card rounded-full"></span>
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 dark:text-white leading-tight">
-                  Carlos Ruiz
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Jefe de Cocina
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 dark:bg-white/5 rounded-xl p-2">
-              <div className="text-center border-r border-gray-200 dark:border-white/10">
-                <p className="text-[10px] text-gray-400 uppercase">Pedidos</p>
-                <p className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                  45 Hoy
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] text-gray-400 uppercase">
-                  Tiempo Prom.
-                </p>
-                <p className="text-sm font-bold text-green-500">12 min</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold">
-                En Turno
-              </span>
-              <div className="flex gap-2">
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-comment-alt"></i>
-                </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-ellipsis-v"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+          <CardEmptyAdded
+            onAction={() => setIsDrawerOpen(true)}
+            title="Registrar Empleado"
+            description="Añade un nuevo miembro al equipo"
+          />
         </div>
+      )}
 
-        <div className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md rounded-2xl shadow-sm border border-l-4 border-l-gray-300 dark:border-l-gray-600 border-t-white/50 border-r-white/50 border-b-white/50 dark:border-t-white/5 dark:border-r-white/5 dark:border-b-white/5 overflow-hidden hover:shadow-md transition duration-300 group opacity-75 hover:opacity-100">
-          <div className="p-5">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="relative">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150"
-                  alt="Avatar"
-                  className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm grayscale"
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+              onClick={closeDrawer}
+            />
+
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md shadow-2xl z-[101] flex flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+            >
+              <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">Agregar Empleado</h2>
+                  <p className="text-xs text-gray-500">
+                    Invita a un nuevo miembro a tu equipo
+                  </p>
+                </div>
+                <button
+                  onClick={closeDrawer}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <NewEmployeeForm
+                  onCancel={closeDrawer}
+                  onUpdateEmployees={() => restaurantId && loadEmployees(restaurantId)}
                 />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-400 border-2 border-white dark:border-dark-card rounded-full"></span>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-800 dark:text-white leading-tight">
-                  Ana García
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Mesera
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 dark:bg-white/5 rounded-xl p-2">
-              <div className="text-center border-r border-gray-200 dark:border-white/10">
-                <p className="text-[10px] text-gray-400 uppercase">
-                  Ventas Hoy
-                </p>
-                <p className="text-sm font-bold text-gray-500">$0</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] text-gray-400 uppercase">Turno</p>
-                <p className="text-sm font-bold text-gray-500">Mañana</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="px-2 py-1 bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-bold">
-                Desconectado
-              </span>
-              <div className="flex gap-2">
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-comment-alt"></i>
-                </button>
-                <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600 transition flex items-center justify-center">
-                  <i className="fas fa-ellipsis-v"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center p-6 text-gray-400 hover:text-keleo-600 hover:border-keleo-500 hover:bg-keleo-50/50 dark:hover:bg-keleo-900/10 transition duration-300 group h-full min-h-[220px]">
-          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition shadow-inner">
-            <i className="fas fa-user-plus text-2xl"></i>
-          </div>
-          <h3 className="font-bold text-gray-600 dark:text-gray-300">
-            Registrar Empleado
-          </h3>
-          <p className="text-xs mt-1 text-center">
-            Añade un nuevo miembro al equipo
-          </p>
-        </button>
-      </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };

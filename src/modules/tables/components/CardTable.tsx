@@ -2,13 +2,7 @@ import api from "@/api/axios";
 import { StatusBadge, type StatusBadgeColor } from "@/modules/shared";
 import { ROUTES } from "@/routes/paths";
 import { getInitialsString } from "@/utils/getInitialsString";
-import {
-  Armchair,
-  ChevronRight,
-  Clock,
-  Plus,
-  CreditCard,
-} from "lucide-react";
+import { Armchair, ChevronRight, Clock, Plus, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
@@ -47,12 +41,10 @@ const TableCard: React.FC<TableCardProps> = ({
   reservationName,
   reservationPeople,
   timeUntilReservation,
-  accountId,
-  onClick,
 }) => {
   interface StatusConfig {
-    label: string,
-    color: StatusBadgeColor
+    label: string;
+    color: StatusBadgeColor;
   }
 
   const statusConfig: Record<string, StatusConfig> = {
@@ -77,49 +69,24 @@ const TableCard: React.FC<TableCardProps> = ({
   const { restaurantId } = useParams();
   const navigate = useNavigate();
 
-  const [errors, setErrors] = useState<{
-    assign: string[];
-    finalize: string[];
-  }>({
-    assign: [],
-    finalize: [],
-  });
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const assignTable = async () => {
+    setIsAssigning(true);
+
     const dataAssignTable = {
       restaurantId,
       tableId,
+      type: 'dine_in'
     };
     try {
-      await api.post("assign-table", dataAssignTable);
+      await api.post("accounts/open", dataAssignTable);
 
       navigate(ROUTES.TABLES.DETAIL(tableId));
     } catch (error: any) {
-      setErrors((prev) => ({
-        ...prev,
-        assign: ["No se pudo asignar la mesa"],
-      }));
-    }
-  };
-
-  const finalizeAccountTable = async () => {
-    const dataFinalizeAccountTable = {
-      restaurantId,
-      tableId,
-      accountId,
-      paymentMethod: "cash",
-    };
-
-    try {
-      await api.post("finalize-account-table", dataFinalizeAccountTable);
-
-      navigate(ROUTES.INDEX);
-    } catch (error: any) {
-      console.log(error);
-      setErrors((prev) => ({
-        ...prev,
-        finalize: ["No se pudo finalizar la mesa"],
-      }));
+      console.error("No se pudo asignar la mesa", error);
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -151,17 +118,13 @@ const TableCard: React.FC<TableCardProps> = ({
 
   return (
     <div
-      onClick={onClick}
-      className={`min-h-60 relative glass-panel rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-5 border border-white/50 dark:border-white/5 group cursor-pointer`}
+      className={`relative bg-white dark:bg-dark-card rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-white/50 dark:border-white/5 group cursor-pointer`}
     >
-      {/* Header: Nombre y Status */}
       <div
-        className={`flex justify-between items-start ${
-          status === "free" ? "mb-12" : "mb-4"
-        }`}
+        className={`flex justify-between items-start mb-2`}
       >
         <div className="flex flex-col">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+          <h3 className="text-base md:text-xl font-bold text-gray-800 dark:text-white">
             {name}
           </h3>
           <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -172,16 +135,16 @@ const TableCard: React.FC<TableCardProps> = ({
         <StatusBadge color={config.color} text={config.label} />
       </div>
 
-      {/* Body: Contenido dinámico según Status */}
       {status === "free" && (
         <>
-          <div className="flex flex-col items-center justify-center py-2 opacity-50 group-hover:opacity-100 transition">
+          <div className="flex flex-col items-center justify-center py-2 opacity-50 group-hover:opacity-100 my-4">
             <Armchair size={40} className="text-gray-400" />
             <p className="text-xs text-gray-400">Capacidad: {capacity}</p>
           </div>
-          <div className="absolute inset-0 bg-white/90 dark:bg-dark-card/90 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-2xl backdrop-blur-sm">
+          <div className="absolute inset-0 bg-white/90 dark:bg-dark-card/90 opacity-0 group-hover:opacity-100 transition  flex items-center justify-center rounded-2xl backdrop-blur-sm">
             <button
               onClick={assignTable}
+              disabled={isAssigning}
               className="transition-all active:scale-90 cursor-pointer px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg transform scale-90 group-hover:scale-100"
             >
               Asignar Mesa
@@ -191,7 +154,7 @@ const TableCard: React.FC<TableCardProps> = ({
       )}
 
       {(status === "occupied" || status === "payment") && (
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex -space-x-2">
             <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white dark:border-dark-card flex items-center justify-center text-xs font-bold text-gray-500">
               {getInitialsString(employeeName || "")}
@@ -233,9 +196,8 @@ const TableCard: React.FC<TableCardProps> = ({
         </div>
       )}
 
-      {/* Footer: Acciones y Totales (No se muestra en 'free') */}
       {status !== "free" && (
-        <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+        <div className="pt-2 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-400">
               {status === "occupied"

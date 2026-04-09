@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useState } from "react";
+import { createContext, type ReactNode, useState, useCallback, useMemo } from "react";
 
 interface HeaderActionContextType {
   actionHeader: ReactNode;
@@ -14,10 +14,14 @@ export const HeaderActionProvider = ({ children }: { children: ReactNode }) => {
     undefined
   );
 
-  const updateActionHeader = (action: ReactNode) => setActionHeader(action);
+  const updateActionHeader = useCallback((action: ReactNode) => {
+    setActionHeader(action);
+  }, []);
+
+  const value = useMemo(() => ({ actionHeader, updateActionHeader }), [actionHeader, updateActionHeader]);
 
   return (
-    <HeaderActionContext.Provider value={{ actionHeader, updateActionHeader }}>
+    <HeaderActionContext.Provider value={value}>
       {children}
     </HeaderActionContext.Provider>
   );

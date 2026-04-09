@@ -7,7 +7,6 @@ export { default as Avatar } from "./components/Avatar";
 export { default as LayoutSidebar } from "./components/LayoutDashboard";
 export { default as Container } from "./components/Container";
 export { default as InputText } from "./components/InputText";
-export { default as Breadcrumbs } from "./components/Breadcrumbs";
 export { default as EmptyState } from "./components/EmptyState";
 export { default as Badge } from "./components/StatusBadge";
 export { default as useDarkMode } from "./hooks/userDarkMode";
@@ -25,3 +24,9 @@ export { default as CardEmptyAdded } from "./components/CardEmptyAdded";
 export { default as TypeCardForm } from "./components/TypeCardForm";
 export { default as KeleoLogo } from "./components/LogoKeleo";
 export { type StatusBadgeColor } from "./components/StatusBadge"
+export { default as Toggle } from "./components/Toggle";
+export { default as FilterTabs } from "./components/FilterTabs";
+export type { FilterTabOption } from "./components/FilterTabs";
+export { default as MetricCard } from "./components/MetricCard";
+export { default as LoadingScreen } from "./components/LoadingScreen";
+export { WebSocketProvider, useWebSocket } from "./context/WebSocketContext";

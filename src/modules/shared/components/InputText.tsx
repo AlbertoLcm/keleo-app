@@ -1,6 +1,5 @@
 import { useState, type InputHTMLAttributes, type ReactNode } from "react";
-// Importamos los iconos que usaremos (ej: Eye para mostrar, EyeOff para ocultar)
-import { Eye, EyeOff } from "lucide-react"; // Asegúrate de tener 'lucide-react' instalado
+import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router";
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {

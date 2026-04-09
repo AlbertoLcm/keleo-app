@@ -1,6 +1,6 @@
 const CardTableSkeleton: React.FC = () => {
   return (
-    <div className="relative glass-panel rounded-2xl p-5 border border-white/50 dark:border-white/5 bg-white/5 dark:bg-gray-800/20 animate-pulse">
+    <div className="relative bg-white dark:bg-dark-card rounded-2xl p-5 border border-white/50 dark:border-white/5 dark:bg-gray-800/20 animate-pulse">
       
       {/* Header: Nombre y Status */}
       <div className="flex justify-between items-start mb-4">

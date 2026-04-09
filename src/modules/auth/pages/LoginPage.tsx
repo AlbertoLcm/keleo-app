@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Utensils, Mail, Lock, Check, ArrowLeft } from "lucide-react";
-import KeleoLogo from "@/assets/keleo.png";
 import { Button, InputText, ToggleDarkMode } from "@/modules/shared";
 import { ROUTES } from "@/routes/paths";
 import { useAuth } from "../hooks/useAuth";
 import { useLocation, useNavigate } from "react-router";
+import { KeleoLogo } from "@/modules/shared";
 import type { SigninData } from "../types";
 
 export default function Login() {
@@ -36,7 +36,7 @@ export default function Login() {
       setLoginData({ email: "", password: "" });
 
       const location = useLocation();
-      const from = location.state?.from?.pathname || ROUTES.RESTAURANTS;
+      const from = location.state?.from || ROUTES.RESTAURANTS;
 
       // después de login exitoso
       navigate(from, { replace: true });
@@ -149,7 +149,7 @@ export default function Login() {
         {/* Navigation */}
         <div className="flex justify-between items-center p-6 md:p-10 shrink-0">
           <a href="#" className="flex items-center gap-2 group">
-            <img src={KeleoLogo} alt="Keleo" width={32} />
+            <KeleoLogo size={36} />
             <span className="text-xl font-bold text-gray-800 dark:text-white">
               Keleo<span className="text-keleo-600">App</span>
             </span>

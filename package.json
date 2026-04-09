@@ -17,7 +17,7 @@
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.12.2",
     "framer-motion": "^12.23.26",
-    "jspdf": "^3.0.2",
+    "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.560.0",
     "path": "^0.12.7",
@@ -26,6 +26,7 @@
     "react-dropzone": "^14.3.8",
     "react-router": "^7.8.2",
     "recharts": "^3.2.1",
+    "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {

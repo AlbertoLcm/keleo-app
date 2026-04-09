@@ -8,7 +8,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { HeaderActionProvider, LayoutSidebar } from "@/modules/shared";
 import { NewRestaurantPage, RestaurantsPage } from "@/modules/restaurants";
 import { HomeDashboard } from "@/modules/dashboard";
-import { OrdersPage } from "@/modules/orders";
+import { KitchenPage } from "@/modules/kitchen";
 import EmployeesPage from "@/modules/employees/pages/EmployeesPage";
 import { MenuPage } from "@/modules/menu";
 import { SettingsPage } from "@/modules/settings";
@@ -70,7 +70,7 @@ export default function AppRoutes() {
             element={<Navigate to={ROUTES.DASHBOARD.INDEX} replace />}
           />
           <Route path={ROUTES.DASHBOARD.INDEX} element={<HomeDashboard />} />
-          <Route path={ROUTES.ORDERS.INDEX} element={<OrdersPage />} />
+          <Route path={ROUTES.KITCHEN.INDEX} element={<KitchenPage />} />
           <Route path={ROUTES.EMPLOYEES.INDEX} element={<EmployeesPage />} />
           <Route path={ROUTES.MENU.INDEX} element={<MenuPage />} />
           <Route path={ROUTES.SETTINGS.INDEX} element={<SettingsPage />} />

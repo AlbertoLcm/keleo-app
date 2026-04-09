@@ -1,81 +1,117 @@
-import { CardEmptyAdded, Container, useHeaderAction } from "@/modules/shared";
+import { CardEmptyAdded, useHeaderAction, FilterTabs, useWebSocket } from "@/modules/shared";
 import {
   CardTable,
   CardTableSkeleton,
   GridCardsTables,
   NewTableForm,
 } from "..";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { LayoutGrid, List, Plus, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import api from "@/api/axios";
-import { useParams } from "react-router";
-import type { Table } from "../types";
+import { useParams, useSearchParams } from "react-router";
+import type { Table, Zone } from "../types";
 
 type ViewModeType = "grid" | "list";
 
 export default function TablesPage() {
   const { updateActionHeader } = useHeaderAction();
-
   let { restaurantId } = useParams();
+  const { socket } = useWebSocket();
+  
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<ViewModeType>("grid");
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
   const [tables, setTables] = useState<Table[]>([]);
 
-  const fetchAllTables = async () => {
+  const zoneFiltered = searchParams.get("zone") || "all";
+
+  const [zones, setZones] = useState<Zone[]>([]);
+
+  const fetchZones = useCallback(async () => {
     try {
-      const tablesRes = await api.get<Table[]>("tables", {
+      const { data } = await api.get<Zone[]>("zones", {
+        params: { restaurantId },
+      });
+      setZones(data);
+    } catch (err) {
+      console.error("Error al cargar zonas", err);
+    }
+  }, [restaurantId]);
+
+  const fetchTables = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get<Table[]>("tables", {
         params: {
           restaurantId,
+          zoneId:
+            zoneFiltered && zoneFiltered !== "all" ? zoneFiltered : undefined,
         },
       });
-
-      setTables(tablesRes.data);
+      setTables(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al cargar datos");
+      console.error("Error al cargar mesas", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [restaurantId, zoneFiltered]);
 
   useEffect(() => {
-    fetchAllTables();
-  }, [restaurantId]);
+    fetchZones();
+  }, [fetchZones]);
 
   useEffect(() => {
-    updateActionHeader(
+    fetchTables();
+  }, [fetchTables]);
+
+  useEffect(() => {
+    if (socket) {
+      const handleTableUpdated = () => {
+        fetchTables();
+      };
+
+      socket.on("tableUpdated", handleTableUpdated);
+
+      return () => {
+        socket.off("tableUpdated", handleTableUpdated);
+      };
+    }
+  }, [socket, fetchTables]);
+
+  const headerContent = useMemo(
+    () => (
       <section className="flex justify-between w-full items-center">
         <div className="flex flex-col">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-base lg:text-lg font-bold text-gray-900 dark:text-white">
             Mapa de Mesas
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="hidden lg:block text-xs text-gray-500 dark:text-gray-400">
             Gestiona la distribución y estado en tiempo real
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex">
           <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-lg mr-2">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md cursor-pointer ${
+              className={`p-1.5 rounded-md cursor-pointer transition-colors ${
                 viewMode === "grid"
                   ? "bg-white dark:bg-white/20 shadow-sm"
-                  : "text-gray-400"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
               <LayoutGrid size={16} />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md cursor-pointer ${
+              className={`p-1.5 rounded-md cursor-pointer transition-colors ${
                 viewMode === "list"
                   ? "bg-white dark:bg-white/20 shadow-sm"
-                  : "text-gray-400"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
               <List size={16} />
@@ -86,17 +122,21 @@ export default function TablesPage() {
             onClick={() => setIsDrawerOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold"
           >
-            <Plus size={20} />{" "}
+            <Plus size={20} />
             <span className="hidden sm:inline">Nueva Mesa</span>
           </button>
         </div>
       </section>
-    );
+    ),
+    [viewMode],
+  );
 
+  useEffect(() => {
+    updateActionHeader(headerContent);
     return () => updateActionHeader(null);
-  }, [viewMode]);
+  }, [headerContent, updateActionHeader]);
 
-  const renderTables = () => {
+  const tablesContent = useMemo(() => {
     if (loading) {
       return (
         <GridCardsTables>
@@ -128,34 +168,44 @@ export default function TablesPage() {
             accountId={table.account_id}
           />
         ))}
-        <CardEmptyAdded
-          onAction={() => setIsDrawerOpen(true)}
-          title="Añadir Mesa"
-          description="Registra una nueva mesa"
-        />
+        {tables.length === 0 && (
+          <CardEmptyAdded
+            onAction={() => setIsDrawerOpen(true)}
+            title="Añadir Mesa"
+            description="Registra una nueva mesa"
+          />
+        )}
       </GridCardsTables>
     );
+  }, [loading, tables]);
+
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
+
+  const handleZoneClick = (zoneId: string) => {
+    if (zoneId === "all") {
+      searchParams.delete("zone");
+      setSearchParams(searchParams);
+    } else {
+      setSearchParams({ zone: zoneId });
+    }
   };
 
   return (
-    <Container>
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
-          <button className="cursor-pointer px-4 py-2 bg-keleo-600 text-white rounded-xl shadow-md shadow-keleo-500/20 text-sm font-bold whitespace-nowrap transition">
-            Todos
-          </button>
-          <button className="cursor-pointer px-4 py-2 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition">
-            Salón Principal
-          </button>
-          <button className="cursor-pointer px-4 py-2 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition">
-            Terraza
-          </button>
-          <button className="cursor-pointer px-4 py-2 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md hover:bg-white dark:hover:bg-dark-card text-gray-600 dark:text-gray-300 rounded-xl border border-white/50 dark:border-white/5 text-sm font-medium whitespace-nowrap transition">
-            Barra
-          </button>
-        </div>
+    <>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 -mx-4 md:-mx-6">
+        <FilterTabs
+          options={[
+            { id: "all", label: "Todas" },
+            ...zones.map((zone) => ({ id: zone.id, label: zone.name }))
+          ]}
+          activeId={zoneFiltered}
+          onChange={(id) => handleZoneClick(id || "all")}
+          className="w-full md:w-auto pb-2 md:pb-0"
+          contentBefore={<div className="w-3 md:w-4 shrink-0" aria-hidden="true"></div>}
+          contentAfter={<div className="w-3 md:w-4 shrink-0" aria-hidden="true"></div>}
+        />
 
-        <div className="flex items-center gap-4 text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/40 dark:bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm">
+        <div className="mx-4 md:mx-6 flex items-center gap-4 text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/40 dark:bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>{" "}
             Libre
@@ -175,22 +225,20 @@ export default function TablesPage() {
         </div>
       </div>
 
-      {renderTables()}
+      {tablesContent}
 
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            {/* Overlay/Fondo oscuro */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
-              onClick={() => setIsDrawerOpen(false)}
+              onClick={closeDrawer}
             />
 
-            {/* Panel Lateral (Drawer) */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -206,8 +254,8 @@ export default function TablesPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition"
+                  onClick={closeDrawer}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition cursor-pointer"
                 >
                   <X size={20} />
                 </button>
@@ -215,14 +263,18 @@ export default function TablesPage() {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 <NewTableForm
-                  onCancel={() => setIsDrawerOpen(false)}
-                  onUpdateTables={() => fetchAllTables()}
+                  zones={zones}
+                  onZoneAdded={(newZone) =>
+                    setZones((prev) => [...prev, newZone])
+                  }
+                  onCancel={closeDrawer}
+                  onUpdateTables={fetchTables}
                 />
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-    </Container>
+    </>
   );
 }

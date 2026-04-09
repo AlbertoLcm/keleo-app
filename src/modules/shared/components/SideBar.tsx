@@ -5,7 +5,6 @@ import {
   Grid2x2,
   House,
   LogOutIcon,
-  NotebookPen,
   Settings,
   Users,
   X,
@@ -31,7 +30,7 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
       className={`
         fixed inset-y-0 eft-0 z-50 w-76 lg:w-64 h-full flex flex-col
         transform transition-transform duration-300 ease-in-out
-        glass-panel md:flex border-r border-gray-200/50 dark:border-white/5
+        bg-white dark:bg-dark-bg md:flex border-r border-gray-200/50 dark:border-white/5
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:flex
       `}
@@ -66,17 +65,9 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
           <span>Mesas</span>
         </NavLink>
 
-        <NavLink to={ROUTES.ORDERS.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-          <NotebookPen />
-          <span>Externos</span>
-        </NavLink>
-
         <NavLink to={ROUTES.KITCHEN.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
           <ChefHat />
           <span>Cocina</span>
-          <span className="ml-auto bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
-            3
-          </span>
         </NavLink>
 
         <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 pl-4">

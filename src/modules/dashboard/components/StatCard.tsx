@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 interface StatCardProps {
   title: string;
@@ -47,7 +48,7 @@ const StatCard: React.FC<StatCardProps> = ({
   const theme = colorMap[(color as keyof typeof colorMap) || 'green'] || colorMap.green;
 
   return (
-    <div className="bg-white/60 dark:bg-dark-card/60 backdrop-blur-md p-5 rounded-2xl shadow-sm border border-white/50 dark:border-white/5 flex flex-col justify-between h-32 hover:shadow-lg hover:shadow-keleo-500/5 transition duration-300">
+    <div className="bg-white dark:bg-dark-card p-5 rounded-2xl shadow-sm border border-white/50 dark:border-white/5 flex flex-col justify-between h-32 hover:shadow-lg hover:shadow-keleo-500/5 transition duration-300">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -67,7 +68,7 @@ const StatCard: React.FC<StatCardProps> = ({
             trendUp ? "text-green-500" : "text-red-500"
           }`}
         >
-          <i className={`fas fa-arrow-${trendUp ? "up" : "down"}`}></i> {trend}
+          {trendUp ? <ArrowUp size={12} className="inline mr-1" /> : <ArrowDown size={12} className="inline mr-1" />} {trend}
         </div>
       )}
       {progress !== undefined && (

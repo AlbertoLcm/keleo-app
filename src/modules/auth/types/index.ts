@@ -1,5 +1,3 @@
-import type { UUID } from "crypto";
-
 export interface SigninData {
   email: string,
   password: string
@@ -34,5 +32,6 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoggedIn: boolean;
+  isLoading: boolean;
   verifyEmail: (token: string) => Promise<void>;
 }

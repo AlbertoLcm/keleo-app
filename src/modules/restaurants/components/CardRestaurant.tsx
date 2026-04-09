@@ -1,4 +1,4 @@
-import { ArrowRight, EllipsisVertical, MapPin, Moon } from "lucide-react";
+import { ArrowRight, MapPin, Moon } from "lucide-react";
 import type { TypeRestaurant } from "../types";
 import formatCurrency from "../utils/formatCurrency";
 
@@ -45,8 +45,9 @@ export default function CardRestaurant({
 
   return (
     <div 
-      className={`glass-panel rounded-2xl p-6 shadow-sm transition duration-300 border border-gray-200 dark:border-dark-border group relative overflow-hidden 
+      className={`bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm transition duration-300 border border-gray-200 dark:border-dark-border group relative overflow-hidden cursor-pointer
       ${isOpen ? "hover:shadow-xl hover:shadow-keleo-500/10" : "opacity-75 hover:opacity-100"}`}
+      onClick={handleClick}
     >
       {/* Barra superior solo visible si está abierto */}
       {isOpen && (
@@ -68,9 +69,6 @@ export default function CardRestaurant({
             </p>
           </div>
         </div>
-        <button className="text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 transition cursor-pointer">
-          <EllipsisVertical size={20} />
-        </button>
       </div>
 
       {/* Grid de Stats con opacidad si está cerrado */}

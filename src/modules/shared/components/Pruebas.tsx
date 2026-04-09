@@ -8,8 +8,7 @@ import {
   X, 
   Bell, 
   Search, 
-  ChevronRight,
-  HelpCircle
+  ChevronRight
 } from 'lucide-react';
 
 // --- Tipos e Interfaces ---

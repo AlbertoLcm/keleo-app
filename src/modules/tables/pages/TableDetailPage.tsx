@@ -1,209 +1,109 @@
-import {
-  Container,
-  StatusBadge,
-  useHeaderAction,
-  useLockBodyScroll,
-} from "@/modules/shared";
-import { ROUTES } from "@/routes/paths";
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  CircleCheck,
-  Minus,
-  Pencil,
-  Plus,
-  Receipt,
-  Search,
-  Send,
-  Star,
-  X,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router";
-import type { Table, Product } from "../types";
-import CardProduct from "../components/CardProduct";
-import api from "@/api/axios";
-import GridCardsProducts from "../components/GridCardsProducts";
-import {
-  motion,
-  AnimatePresence,
-  LazyMotion,
-  domAnimation,
-} from "framer-motion";
+import { FilterTabs, useHeaderAction } from "@/modules/shared";
 
-const listProducts = [
-  {
-    id: "1",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "2",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "3",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "4",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "5",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "2",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "3",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "4",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "5",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "2",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "3",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "4",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-  {
-    id: "5",
-    imageUrl: "",
-    name: "Keleo Burger",
-    price: 0,
-    description: "Doble carne premium, queso cheddar, cebolla caramelizda",
-  },
-];
+import { ROUTES } from "@/routes/paths";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import { LazyMotion, domAnimation } from "framer-motion";
+import {
+  getCategories,
+  getProducts,
+} from "@/modules/menu/services/menu.service";
+import type { Category, Product } from "@/modules/menu/models/menu.model";
+
+import { useTableDetail } from "../hooks/useTableDetail";
+import { useLocalCart } from "../hooks/useLocalCart";
+import ProductGrid from "../components/ProductGrid";
+import MobileCartBar from "../components/MobileCartBar";
+import TicketSidebar from "../components/TicketSidebar";
+import CheckoutModal from "../components/CheckoutModal";
+import PreCuentaModal from "../components/PreCuentaModal";
+import ContentHeaderDetailPage from "../components/ContentHeaderDetailPage";
+import { closeAccount, requestPayment } from "../services/accounts.service";
 
 const TableDetailPage = () => {
-  const refAsideBar = useRef<HTMLDivElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const categoryFiltered = searchParams.get("category") || undefined;
+  const searchFiltered = searchParams.get("q") || undefined;
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [isTicketPanelOpen, setIsTicketPanelOpen] = useState<boolean>(true);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isPreCuentaOpen, setIsPreCuentaOpen] = useState(false);
 
   const { updateActionHeader } = useHeaderAction();
   const { restaurantId, tableId } = useParams();
-  const [uiState, setUiState] = useState({
-    loadingInfoTable: false,
-  });
-  const [errors, setErrors] = useState<{ infoTable: string[] }>({
-    infoTable: [],
-  });
 
-  const [tableInfo, setTableInfo] = useState<Table>();
+  const { tableInfo, fetchTableInfo } = useTableDetail(tableId);
+  const cart = useLocalCart(tableInfo?.account_id);
 
-  const fetchTableInfo = useCallback(async () => {
-    setUiState((prev) => ({ ...prev, loadingInfoTable: true }));
+  const handleRequestPayment = async () => {
+    if (!tableInfo?.account_id) return;
+    await requestPayment(tableInfo.account_id);
+    setIsPreCuentaOpen(false);
+    await fetchTableInfo();
+  };
+
+  const handleSendToKitchen = async () => {
+    await cart.sendToKitchen();
+    await fetchTableInfo();
+  };
+
+  const handleCheckout = async (paymentMethod: string) => {
+    if (!tableInfo?.account_id) return;
+    await closeAccount(tableInfo.account_id, paymentMethod);
+    cart.clearCart();
+    const targetRoute = `${ROUTES.RESTAURANTS.PANEL(restaurantId || "")}/${ROUTES.TABLES.INDEX}`;
+    navigate(targetRoute);
+  };
+
+  const fetchCategories = useCallback(async () => {
+    if (!restaurantId) return;
     try {
-      const response = await api.get(`/table/${tableId}`);
-      setTableInfo(response.data);
+      const data = await getCategories(restaurantId);
+      setCategories(data);
     } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        infoTable: ["No se pudo obtener el detalle de la mesa."],
-      }));
-    } finally {
-      setUiState((prev) => ({ ...prev, loadingInfoTable: false }));
+      console.error("Error al cargar categorías", error);
     }
-  }, [tableId]);
+  }, [restaurantId]);
+
+  const loadProducts = async (id: string, catId?: string, search?: string) => {
+    setIsLoadingProducts(true);
+    try {
+      const data = await getProducts(id, catId, search);
+      setProducts(data);
+    } catch (error) {
+      console.error("Error loading products:", error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (restaurantId) {
+      loadProducts(restaurantId, categoryFiltered, searchFiltered);
+    }
+  }, [restaurantId, categoryFiltered, searchFiltered]);
 
   useEffect(() => {
     fetchTableInfo();
   }, [fetchTableInfo]);
 
   useEffect(() => {
-    updateActionHeader(
-      <section className="flex justify-between w-full items-center">
-        <div className="flex items-center gap-4">
-          <Link
-            to={ROUTES.TABLES.INDEX}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
-          >
-            <ArrowLeft />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              {tableInfo?.name || "Cargando..."}{" "}
-              <StatusBadge color="orange" text="Ocupada" />
-            </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Capacidad para {tableInfo?.capacity} personas
-            </p>
-          </div>
-        </div>
+    fetchCategories();
+  }, [fetchCategories]);
 
-        <div className="hidden lg:block w-64 relative">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-100/50 dark:bg-black/20 border focus:bg-white dark:focus:bg-dark-card border-gray-200 dark:border-white/5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-keleo-500/50 transition-all text-gray-700 dark:text-gray-200"
-          />
-          <Search
-            width={18}
-            className="absolute left-3 top-2 text-gray-400 text-xs"
-          />
-        </div>
-      </section>,
-    );
+  useEffect(() => {
+    updateActionHeader(<ContentHeaderDetailPage />);
 
     return () => updateActionHeader(null);
-  }, [tableId, tableInfo]);
+  }, [tableId, updateActionHeader]);
 
-  // 2. OPTIMIZAR EL LISTENER DE RESIZE
-  // Usar un listener más limpio para evitar re-renders innecesarios
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 1023px)");
-    // Set inicial
     setIsTicketPanelOpen(!mediaQuery.matches);
 
     const handleResize = (e: MediaQueryListEvent) => {
@@ -212,262 +112,92 @@ const TableDetailPage = () => {
 
     mediaQuery.addEventListener("change", handleResize);
     return () => mediaQuery.removeEventListener("change", handleResize);
-  }, []); // Array vacío para que solo corra al montar
+  }, []);
 
-  const MemoizedProductGrid = memo(({ products }: { products: Product[] }) => (
-    <GridCardsProducts>
-      {products.map((product) => (
-        <CardProduct
-          key={product.id}
-          name={product.name}
-          description={product.description}
-          price={product.price}
-          productId={product.id}
-          onClick={() => console.log(product.id)}
-        />
-      ))}
-    </GridCardsProducts>
-  ));
+  const handleCategoryClick = (categoryId: string) => {
+    if (categoryId === "all") {
+      searchParams.delete("category");
+      setSearchParams(searchParams);
+    } else {
+      setSearchParams({ category: categoryId });
+    }
+  };
 
   return (
     <LazyMotion features={domAnimation}>
-      <section className="flex overflow-hidden relative flex-1 -mt-20">
-        {/* PRODUCT MENU (Full Width on Mobile) */}
-        <div className="flex-1 flex flex-col w-full relative overflow-auto pt-20 no-scrollbar">
-          {/* Category Tabs (Horizontal Scroll) */}
-          <div className="px-4 flex items-center gap-1 z-10 glass-panel sticky top-0 min-h-16 overflow-x-auto no-scrollbar">
-            <button className="flex gap-1 items-center px-4 py-2 bg-keleo-600 text-white rounded-full shadow-md shadow-keleo-500/30 text-sm font-bold whitespace-nowrap">
-              <Star size={18} /> Top
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-full text-sm font-bold whitespace-nowrap active:bg-gray-100 dark:active:bg-white/10 transition shadow-sm">
-              Burgers
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-full text-sm font-bold whitespace-nowrap active:bg-gray-100 dark:active:bg-white/10 transition shadow-sm">
-              Pizzas
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-full text-sm font-bold whitespace-nowrap active:bg-gray-100 dark:active:bg-white/10 transition shadow-sm">
-              Tacos
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-white/5 text-gray-700 dark:text-gray-300 rounded-full text-sm font-bold whitespace-nowrap active:bg-gray-100 dark:active:bg-white/10 transition shadow-sm">
-              Bebidas
-            </button>
+      <section className="flex-1 flex relative -m-4 md:-m-6 w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-[calc(100%+2rem)] md:h-[calc(100%+3rem)]">
+        <div className="flex-1 overflow-y-auto touch-pan-y p-4 md:p-6">
+          <div className="-mx-4 md:-mx-6">
+            <FilterTabs
+              options={[
+                { id: "all", label: "Todos" },
+                ...categories.map((category) => ({
+                  id: category.id,
+                  label: category.name,
+                })),
+              ]}
+              className="mb-4 md:mb-6"
+              activeId={categoryFiltered || "all"}
+              onChange={(id) => handleCategoryClick(id || "all")}
+              contentBefore={
+                <div className="w-3 md:w-4 shrink-0" aria-hidden="true"></div>
+              }
+              contentAfter={
+                <div className="w-3 md:w-4 shrink-0" aria-hidden="true"></div>
+              }
+            />
           </div>
 
-          {/* Products Grid */}
-          <Container className="max-w-[1168px]">
-            <div className="flex-1 touch-pan-y">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">
-                Recomendados
-              </h3>
+          <ProductGrid 
+            products={products} 
+            isLoading={isLoadingProducts} 
+            onAddToCart={cart.addItem} 
+            isLocked={tableInfo?.status === "payment"} 
+          />
 
-              <MemoizedProductGrid products={listProducts} />
-
-              {/* Space for bottom bar on mobile */}
-              <div className="h-20 lg:hidden"></div>
-            </div>
-          </Container>
+          <div className="h-20 lg:hidden"></div>
         </div>
 
-        {/* MOBILE BOTTOM CART BAR (Floating) */}
-        <div
-          id="bottom-cart-bar"
-          className="glass-panel fixed bottom-4 left-4 right-4 z-40 lg:hidden rounded-2xl p-3 flex items-center justify-between cursor-pointer-transform duration-200 border border-white/20 shadow-2xl"
-          onClick={() => setIsTicketPanelOpen(true)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full flex items-center justify-center font-bold text-sm shadow-md">
-              3
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Ver Orden
-              </span>
-              <span className="text-base font-bold text-gray-900 dark:text-white font-mono">
-                $446.60
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-keleo-600 dark:text-keleo-400 font-bold text-sm px-2">
-            Ver detalle <ChevronUp size={18} />
-          </div>
-        </div>
+        <MobileCartBar
+          onOpenTicket={() => setIsTicketPanelOpen(true)}
+          itemsCount={cart.itemsCount + (tableInfo?.orders_details?.length || 0)}
+          total={cart.total + (tableInfo?.orders_details?.reduce((acc, i) => acc + (i.applied_unit_price * i.quantity), 0) || 0)}
+        />
 
-        {/* TICKET PANEL (Overlay on Mobile, Sidebar on Desktop) */}
-        <AnimatePresence>
-          {isTicketPanelOpen && (
-            <motion.aside
-              key="ticket-panel"
-              id="ticket-panel"
-              ref={refAsideBar}
-              initial={{ y: "100%" }}
-              animate={{ y: "0%" }}
-              exit={{ y: "100%" }}
-              transition={{
-                type: "tween",
-                ease: [0.25, 0.1, 0.25, 1], // Curva Bezier similar a iOS (snappy)
-                duration: 0.3,
-              }}
-              style={{
-                willChange: "transform", // CRÍTICO: Prepara la GPU
-                backfaceVisibility: "hidden", // Evita parpadeos en algunos navegadores
-              }}
-              className="lg:mt-20 lg:ticket-visible fixed inset-0 lg:static lg:inset-auto z-50 w-full lg:w-96 flex flex-col lg:border-l lg:border-gray-200 lg:dark:border-white/5 glass-panel"
-            >
-              <div
-                className="px-4 h-16 border-b border-gray-200 dark:border-white/5 flex justify-between items-center shadow-sm lg:shadow-none"
-                onClick={() => setIsTicketPanelOpen(false)}
-              >
-                <h2 className="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
-                  <Receipt className="text-keleo-500" /> Orden Actual
-                </h2>
-                <button className="lg:hidden w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-600 dark:text-gray-300">
-                  <ChevronDown />
-                </button>
-                <button className="hidden lg:block text-xs text-keleo-600 dark:text-keleo-400 font-bold hover:underline">
-                  Limpiar
-                </button>
-              </div>
+        <TicketSidebar
+          isOpen={isTicketPanelOpen}
+          onClose={() => setIsTicketPanelOpen(false)}
+          isLocked={tableInfo?.status === "payment"}
+          onPreCuenta={() => setIsPreCuentaOpen(true)}
+          items={cart.items}
+          sentItems={tableInfo?.orders_details}
+          total={cart.total}
+          totalSent={tableInfo?.orders_details?.reduce((acc, i) => acc + (i.applied_unit_price * i.quantity), 0) || 0}
+          isSending={cart.isSending}
+          onIncrease={(id) => cart.updateQuantity(id, 1)}
+          onDecrease={(id) => cart.updateQuantity(id, -1)}
+          onRemove={cart.removeItem}
+          onAddNote={cart.updateNote}
+          onClear={cart.clearCart}
+          onSendToKitchen={handleSendToKitchen}
+          onCheckout={() => setIsCheckoutOpen(true)}
+        />
 
-              {/* Ticket Items List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 dark:bg-black/10">
-                {/* Item Sent */}
-                <div className="flex flex-col p-3 rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 opacity-70">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="flex gap-3">
-                      <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-0.5 rounded h-fit">
-                        2x
-                      </span>
-                      <div>
-                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                          Cerveza Nacional
-                        </p>
-                        <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5 flex items-center gap-1">
-                          <CircleCheck size={18} />
-                          Enviado
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                      $120
-                    </span>
-                  </div>
-                </div>
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          onConfirm={handleCheckout}
+          orders={tableInfo?.orders_details ?? []}
+          tableName={tableInfo?.name ?? undefined}
+        />
 
-                {/* Item New (Editable) */}
-                <div className="flex flex-col p-3 rounded-xl bg-white dark:bg-dark-card border-l-4 border-keleo-500 shadow-sm relative group">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex gap-3">
-                      {/* Stepper */}
-                      <div className="flex flex-col items-center gap-1 bg-gray-100 dark:bg-white/5 rounded-lg p-0.5 shadow-inner">
-                        <button className="w-7 h-7 flex items-center justify-center text-xs text-gray-500 hover:text-keleo-500 active:bg-gray-200 dark:active:bg-white/10 rounded">
-                          <Plus size={18} />
-                        </button>
-                        <span className="text-sm font-bold text-gray-800 dark:text-white">
-                          1
-                        </span>
-                        <button className="w-7 h-7 flex items-center justify-center text-xs text-gray-500 hover:text-red-500 active:bg-gray-200 dark:active:bg-white/10 rounded">
-                          <Minus size={18} />
-                        </button>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-white">
-                          Keleo Burger
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          Término medio
-                        </p>
-                        <button className="text-[10px] text-blue-500 font-bold mt-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 rounded hover:bg-blue-100 transition flex gap-1 items-center">
-                          <Pencil size={14} />
-                          Editar nota
-                        </button>
-                      </div>
-                    </div>
-                    <span className="text-sm font-bold text-gray-800 dark:text-white mr-5">
-                      $180
-                    </span>
-                  </div>
-                  <button className="absolute right-0 top-0 p-2 text-gray-500 hover:text-red-500 transition">
-                    <X size={18} />
-                  </button>
-                </div>
-
-                {/* Item New (Editable) */}
-                <div className="flex flex-col p-3 rounded-xl bg-white dark:bg-dark-card border-l-4 border-keleo-500 shadow-sm relative group">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex gap-3">
-                      {/* Stepper */}
-                      <div className="flex flex-col items-center gap-1 bg-gray-100 dark:bg-white/5 rounded-lg p-0.5 shadow-inner">
-                        <button className="w-7 h-7 flex items-center justify-center text-xs text-gray-500 hover:text-keleo-500 active:bg-gray-200 dark:active:bg-white/10 rounded">
-                          <Plus size={18} />
-                        </button>
-                        <span className="text-sm font-bold text-gray-800 dark:text-white">
-                          1
-                        </span>
-                        <button className="w-7 h-7 flex items-center justify-center text-xs text-gray-500 hover:text-red-500 active:bg-gray-200 dark:active:bg-white/10 rounded">
-                          <Minus size={18} />
-                        </button>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-white">
-                          Keleo Burger
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          Término medio
-                        </p>
-                        <button className="text-[10px] text-blue-500 font-bold mt-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 rounded hover:bg-blue-100 transition flex gap-1 items-center">
-                          <Pencil size={14} />
-                          Editar nota
-                        </button>
-                      </div>
-                    </div>
-                    <span className="text-sm font-bold text-gray-800 dark:text-white mr-5">
-                      $180
-                    </span>
-                  </div>
-                  <button className="absolute right-0 top-0 p-2 text-gray-500 hover:text-red-500 transition">
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="h-20 lg:hidden"></div>
-              </div>
-
-              {/* Footer Summary (Fixed at bottom of ticket panel) */}
-              <div className="p-4 bg-white dark:bg-dark-card border-t border-gray-200 dark:border-white/5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
-                <div className="space-y-1 mb-3">
-                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>Subtotal</span>
-                    <span>$385.00</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>Impuestos</span>
-                    <span>$61.60</span>
-                  </div>
-                  <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-white/5 mt-1">
-                    <span>Total</span>
-                    <span className="text-keleo-600 dark:text-keleo-400">
-                      $446.60
-                    </span>
-                  </div>
-                </div>
-
-                <button className="w-full py-3.5 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/30 font-bold text-base transition transform active:scale-[0.98] flex items-center justify-center gap-2 mb-2">
-                  <Send />
-                  Enviar a Cocina (2)
-                </button>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="py-3 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-xl font-bold text-sm">
-                    Pre-cuenta
-                  </button>
-                  <button className="py-3 bg-blue-500 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-500/20">
-                    Cobrar
-                  </button>
-                </div>
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+        <PreCuentaModal
+          isOpen={isPreCuentaOpen}
+          onClose={() => setIsPreCuentaOpen(false)}
+          onConfirm={handleRequestPayment}
+          orders={tableInfo?.orders_details ?? []}
+          tableName={tableInfo?.name ?? undefined}
+        />
       </section>
     </LazyMotion>
   );

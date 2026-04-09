@@ -97,7 +97,7 @@ function CreateRestaurant() {
             </p>
           </div>
 
-          <div className="glass-panel rounded-3xl p-4 py-6 md:p-10 md:py-10 shadow-xl">
+          <div className="bg-white dark:bg-dark-card rounded-3xl p-4 py-6 md:p-10 md:py-10 shadow-xl">
             {errors.length > 0 && (
               <div className="rounded-xl bg-red-50 border-2 border-red-200 p-4 text-red-400 font-medium mb-6 dark:bg-red-900/30 dark:border-red-900">
                 <ul className="list-inside text-sm space-y-1 list-none">

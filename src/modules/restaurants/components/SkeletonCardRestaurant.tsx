@@ -1,6 +1,6 @@
 export default function SkeletonCardRestaurant() {
   return (
-    <div className="glass-panel rounded-2xl p-6 border border-gray-200 dark:border-dark-border animate-pulse">
+    <div className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-200 dark:border-dark-border animate-pulse">
       {/* Cabecera */}
       <div className="flex justify-between items-start mb-6">
         <div className="flex gap-4">
