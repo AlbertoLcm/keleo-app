@@ -2,7 +2,7 @@ import React from "react";
 
 const GoogleLoginButton: React.FC = () => {
   const loginGoogleAuth = () => {
-    const backendUrl = import.meta.env.VITE_API_URL || 'https://app.keleo.app';
+    const backendUrl = import.meta.env.VITE_API_URL || 'https://api.keleo.app';
     window.location.href = `${backendUrl}/api/v1/auth/google`;
   };
 
