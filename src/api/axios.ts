@@ -1,8 +1,9 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/v1/` : "https://api.keleo.app/api/v1/";
+
 const api = axios.create({
-  // baseURL: "https://api.keleo.app/api/v1/",
-  baseURL: "http://localhost:3000/api/v1/",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },

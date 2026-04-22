@@ -2,7 +2,8 @@ import React from "react";
 
 const GoogleLoginButton: React.FC = () => {
   const loginGoogleAuth = () => {
-    window.location.href = 'http://localhost:3000/api/v1/auth/google';
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/api/v1/auth/google`;
   };
 
   return (
