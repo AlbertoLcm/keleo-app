@@ -2,7 +2,7 @@ export const ROUTES = {
   INDEX: "/",
   LOGIN: "/login",
   SIGNUP: "/signup",
-
+  AUTH_SUCCESS: "/auth/success",
   RESTAURANTS: { 
     INDEX: "/restaurants",
     PANEL: (restaurantId: string | string = ":restaurantId") => `/restaurants/${restaurantId}`,
@@ -21,4 +21,7 @@ export const ROUTES = {
   SETTINGS: { INDEX: "config" },
   VERIFY: "/verify",
   FORGOT_PASSWORD: "/forgot-password",
+  PROFILE: "/profile",
+  SUBSCRIPTION: "/subscription",
+  GLOBAL_SETTINGS: "/settings",
 };

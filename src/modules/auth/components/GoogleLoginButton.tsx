@@ -1,40 +1,23 @@
 import React from "react";
-import { GoogleOAuthProvider, GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-import axios from "axios";
-
-interface LoginResponse {
-  access_token: string;
-}
 
 const GoogleLoginButton: React.FC = () => {
-  
-  const handleSuccess = async (credentialResponse: CredentialResponse) => {
-    if (!credentialResponse.credential) {
-      console.error("No se recibió credencial de Google");
-      return;
-    }
-
-    try {
-      const res = await axios.post<LoginResponse>(
-        "http://localhost:3000/auth/google",
-        { token: credentialResponse.credential }
-      );
-      localStorage.setItem("token", res.data.access_token);
-      alert("Inicio de sesión con Google exitoso");
-    } catch (err) {
-      console.error(err);
-      alert("Error al iniciar sesión con Google");
-    }
+  const loginGoogleAuth = () => {
+    window.location.href = 'http://localhost:3000/api/v1/auth/google';
   };
 
   return (
-    <GoogleOAuthProvider clientId="TU_CLIENT_ID.apps.googleusercontent.com">
-      <GoogleLogin
-        shape="pill"
-        onSuccess={handleSuccess}
-        onError={() => console.log("Error al iniciar con Google")}
+    <button
+      type="button"
+      onClick={loginGoogleAuth}
+      className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-keleo-50 dark:hover:bg-dark-card transition bg-white dark:bg-transparent text-gray-700 dark:text-white"
+    >
+      <img
+        src="https://www.svgrepo.com/show/475656/google-color.svg"
+        className="w-5 h-5"
+        alt="Google"
       />
-    </GoogleOAuthProvider>
+      <span className="text-sm font-medium">Google</span>
+    </button>
   );
 };
 

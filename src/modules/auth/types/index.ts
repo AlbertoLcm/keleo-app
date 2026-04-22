@@ -12,10 +12,11 @@ export interface SignupData {
 
 export enum Role {
   ADMIN = 'admin',
-  MESERO = 'mesero',
-  GERENTE = 'gerente',
-  CAJERO = 'cajero',
-  COCINERO = 'cocinero',
+  WAITER = 'waiter',
+  MANAGER = 'manager',
+  CASHIER = 'cashier',
+  KITCHEN = 'kitchen',
+  OWNER = 'owner',
 }
 
 export interface User {
@@ -23,13 +24,14 @@ export interface User {
   name: string,
   lastname: string,
   email: string,
-  role: Role,
+  profile_image?: string,
   created_at: Date
 }
 
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  userSet: (user: User) => void;
   logout: () => void;
   isLoggedIn: boolean;
   isLoading: boolean;

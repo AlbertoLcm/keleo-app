@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import { ROUTES } from "@/routes/paths";
-import ToggleDarkMode from "./ToggleDarkMode";
 import type { ReactNode } from "react";
 import MenuUser from "./MenuUser";
 import KeleoLogo from "./LogoKeleo";
@@ -25,7 +24,6 @@ const NavBar: React.FC<NavbarProps> = ({ children }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <ToggleDarkMode />
           <MenuUser />
         </div>
       </div>

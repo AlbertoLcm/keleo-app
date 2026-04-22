@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Utensils, Mail, Lock, Check, ArrowLeft } from "lucide-react";
-import { Button, InputText, ToggleDarkMode } from "@/modules/shared";
+import { Button, InputText } from "@/modules/shared";
 import { ROUTES } from "@/routes/paths";
 import { useAuth } from "../hooks/useAuth";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { KeleoLogo } from "@/modules/shared";
 import type { SigninData } from "../types";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 export default function Login() {
   const { login } = useAuth();
@@ -55,6 +56,7 @@ export default function Login() {
       setSendingForm(false);
     }
   };
+
 
   return (
     <div className="font-sans text-gray-700 bg-keleo-50 dark:bg-dark-bg dark:text-dark-text h-screen flex flex-col md:flex-row overflow-hidden transition-colors duration-300">
@@ -148,22 +150,19 @@ export default function Login() {
       <div className="w-full md:w-1/2 flex flex-col h-full bg-white dark:bg-dark-bg overflow-y-auto transition-colors duration-300">
         {/* Navigation */}
         <div className="flex justify-between items-center p-6 md:p-10 shrink-0">
-          <a href="#" className="flex items-center gap-2 group">
+          <a href="https://keleo.app" className="flex items-center gap-2 group">
             <KeleoLogo size={36} />
             <span className="text-xl font-bold text-gray-800 dark:text-white">
               Keleo<span className="text-keleo-600">App</span>
             </span>
           </a>
 
-          <div className="flex items-center gap-4">
-            <ToggleDarkMode />
-            <a
-              href="#"
+            <Link
+              to={ROUTES.LOGIN}
               className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-keleo-600 dark:text-gray-400 dark:hover:text-keleo-500 transition"
             >
               <ArrowLeft size={16} /> Volver
-            </a>
-          </div>
+            </Link>
         </div>
 
         {/* Form Content */}
@@ -255,32 +254,17 @@ export default function Login() {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-2 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-keleo-50 dark:hover:bg-dark-card transition bg-white dark:bg-transparent text-gray-700 dark:text-white">
-                <img
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  className="w-5 h-5"
-                  alt="Google"
-                />
-                <span className="text-sm font-medium">Google</span>
-              </button>
-              <button className="flex items-center justify-center gap-2 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-keleo-50 dark:hover:bg-dark-card transition bg-white dark:bg-transparent text-gray-700 dark:text-white">
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.1 1.88-2.54 5.79.1 6.94-.65 1.73-1.63 3.45-2.15 4.27zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-                </svg>
-                <span className="text-sm font-medium">Apple</span>
-              </button>
-            </div>
+            <GoogleLoginButton />
 
             {/* Sign Up Link */}
             <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
               ¿No tienes una cuenta?{" "}
-              <a
-                href="#"
+              <Link
+                to={ROUTES.SIGNUP}
                 className="font-bold text-keleo-600 hover:text-keleo-700 dark:text-keleo-500 dark:hover:text-keleo-100 transition"
               >
-                Solicita una Demo
-              </a>
+                Crea una cuenta
+              </Link>
             </p>
           </div>
 

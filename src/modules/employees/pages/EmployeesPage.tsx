@@ -8,10 +8,12 @@ import type { Employee } from "../models/employee.model";
 import { useHeaderAction, CardEmptyAdded } from "@/modules/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { useWebSocket } from "@/modules/shared/context/WebSocketContext";
 
 const EmployeesPage = () => {
   const { updateActionHeader } = useHeaderAction();
   const { restaurantId } = useParams();
+  const { socket } = useWebSocket();
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -25,6 +27,24 @@ const EmployeesPage = () => {
       loadEmployees(restaurantId);
     }
   }, [restaurantId]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleStatusChanged = (data: { employeeId: string; isOnline: boolean }) => {
+      setEmployees((prev) =>
+        prev.map((emp) =>
+          emp.id === data.employeeId ? { ...emp, is_online: data.isOnline } : emp
+        )
+      );
+    };
+
+    socket.on('employeeStatusChanged', handleStatusChanged);
+
+    return () => {
+      socket.off('employeeStatusChanged', handleStatusChanged);
+    };
+  }, [socket]);
 
   const loadEmployees = async (id: string) => {
     setIsLoading(true);
@@ -73,12 +93,14 @@ const EmployeesPage = () => {
 
   return (
     <>
-      <FilterTabs 
+      <FilterTabs
         options={[
           { id: null, label: "Todos" },
-          { id: "meseros", label: "Meseros" },
-          { id: "cocina", label: "Cocina" },
-          { id: "gerencia", label: "Gerencia" },
+          { id: "waiter", label: "Meseros" },
+          { id: "kitchen", label: "Cocina" },
+          { id: "manager", label: "Gerencia" },
+          { id: "cashier", label: "Caja" },
+          { id: "admin", label: "Admin" },
         ]}
         activeId={activeTab}
         onChange={setActiveTab}
@@ -121,30 +143,35 @@ const EmployeesPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredEmployees.map((employee) => (
-            <EmployeeCard
-              key={employee.id}
-              name={`${employee.name} ${employee.lastname || ''}`.trim()}
-              role={
-                employee.role === 'meseros' ? 'Mesero' :
-                employee.role === 'cocina' ? 'Cocina' :
-                employee.role === 'gerencia' ? 'Gerencia' : employee.role
-              }
-              avatarUrl={employee.profile_image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=150"}
-              status={employee.is_online ? "active" : "inactive"}
-              statusText={employee.is_online ? "En Turno" : "Desconectado"}
-              stats={[
-                { label: "Rol", value: employee.role },
-                { label: "Email", value: employee.email, valueClassName: "truncate max-w-[100px]" }
-              ]}
+          {filteredEmployees.length === 0 ? (
+            <CardEmptyAdded
+              onAction={() => setIsDrawerOpen(true)}
+              title="Registrar Empleado"
+              description="Añade un nuevo miembro al equipo"
             />
-          ))}
-
-          <CardEmptyAdded
-            onAction={() => setIsDrawerOpen(true)}
-            title="Registrar Empleado"
-            description="Añade un nuevo miembro al equipo"
-          />
+          ) : (
+            filteredEmployees.map((employee) => (
+              <EmployeeCard
+                key={employee.id}
+                name={`${employee.name} ${employee.lastname || ''}`.trim()}
+                role={
+                  employee.role === 'waiter' ? 'Mesero' :
+                    employee.role === 'kitchen' ? 'Cocina' :
+                      employee.role === 'manager' ? 'Gerente' :
+                        employee.role === 'cashier' ? 'Cajero' :
+                          employee.role === 'admin' ? 'Admin' :
+                            employee.role === 'owner' ? 'Propietario' : employee.role
+                }
+                avatarUrl={employee.profile_image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=150"}
+                status={employee.is_online ? "active" : "inactive"}
+                statusText={employee.is_online ? "En Turno" : "Desconectado"}
+                stats={[
+                  { label: "Rol", value: employee.role },
+                  { label: "Email", value: employee.email, valueClassName: "truncate max-w-[100px]" }
+                ]}
+              />
+            )))
+          }
         </div>
       )}
 

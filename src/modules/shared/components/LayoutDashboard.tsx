@@ -3,6 +3,7 @@ import SideBar from "./SideBar";
 import { Container, HeaderDashboard, useHeaderAction, WebSocketProvider } from "..";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { RestaurantProvider } from "@/modules/restaurants";
 
 export default function LayoutSidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,8 +15,9 @@ export default function LayoutSidebar() {
   const { restaurantId } = useParams();
 
   return (
-    <WebSocketProvider restaurantId={restaurantId}>
-      <div className="h-screen flex relative overflow-hidden">
+    <RestaurantProvider>
+      <WebSocketProvider restaurantId={restaurantId}>
+        <div className="h-screen flex relative overflow-hidden">
       {/* Background Effect */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute z-[-10] -top-[20%] right-[10%] w-[40%] h-[40%] bg-keleo-500/30 dark:bg-keleo-900/30 rounded-full blur-[200px]"></div>
@@ -50,7 +52,8 @@ export default function LayoutSidebar() {
           <Outlet />
         </Container>
       </main>
-    </div>
-    </WebSocketProvider>
+      </div>
+      </WebSocketProvider>
+    </RestaurantProvider>
   );
 }

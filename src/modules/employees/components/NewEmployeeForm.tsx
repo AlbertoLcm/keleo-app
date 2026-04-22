@@ -15,9 +15,11 @@ import { createEmployee } from "../services/employee.service";
 import type { CreateEmployeeDto } from "../models/employee.model";
 
 const ROLES = [
-  { id: "meseros", label: "Mesero" },
-  { id: "cocina", label: "Cocina" },
-  { id: "gerencia", label: "Gerencia" },
+  { id: "waiter", label: "Mesero" },
+  { id: "kitchen", label: "Cocina" },
+  { id: "manager", label: "Gerencia" },
+  { id: "cashier", label: "Cajero" },
+  { id: "admin", label: "Admin" },
 ];
 
 interface NewEmployeeFormProps {
@@ -36,7 +38,7 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
     name: "",
     lastname: "",
     email: "",
-    role: "meseros",
+    role: "waiter",
   });
 
   const [uiState, setUiState] = useState({
@@ -61,7 +63,6 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
     setErrors({ form: [] });
 
     try {
-      console.log(formData);
       await createEmployee(restaurantId, formData);
       onUpdateEmployees();
       onCancel();
@@ -94,7 +95,7 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
         <h3 className="text-sm font-bold text-keleo-600 dark:text-keleo-500 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">
           1. Detalles Generales
         </h3>
-        
+
         <InputText
           id="nameEmployee"
           label="NOMBRE"
@@ -119,7 +120,7 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
             setFormData((prev) => ({ ...prev, lastname: e.target.value }))
           }
         />
-        
+
         <InputText
           id="emailEmployee"
           label="CORREO ELECTRÓNICO"
@@ -150,11 +151,10 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
               onClick={() =>
                 setFormData((prev) => ({ ...prev, role: role.id }))
               }
-              className={`py-2.5 px-4 rounded-xl border text-sm font-bold transition-all truncate ${
-                formData.role === role.id
+              className={`py-2.5 px-4 rounded-xl border text-sm font-bold transition-all truncate ${formData.role === role.id
                   ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
                   : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
-              }`}
+                }`}
             >
               {role.label}
             </button>

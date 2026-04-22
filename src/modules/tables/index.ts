@@ -4,8 +4,3 @@ export { default as NewTableForm } from "./components/NewTableForm";
 export { default as TablesPage } from "./pages/TablesPage";
 export { default as CardTableSkeleton } from "./components/CardTableSkeleton";
 export { default as TableDetailPage } from "./pages/TableDetailPage";
-export { default as CardProduct } from "./components/CardProduct";
-export { default as GridCardsProducts } from "./components/GridCardsProducts";
-export { default as CardProductSkeleton } from "./components/CardProductSkeleton";
-export { default as ContentHeaderDetailPage } from "./components/ContentHeaderDetailPage";
-export { default as TicketItem } from "./components/TicketItem";

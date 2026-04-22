@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (!restaurantId) return;
-    
+
     const fetchStats = async () => {
       try {
         setIsLoading(true);
@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchStats();
   }, [restaurantId]);
 

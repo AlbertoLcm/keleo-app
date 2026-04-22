@@ -1,30 +1,32 @@
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import CardRestaurant from "../components/CardRestaurant";
 import { ROUTES } from "@/routes/paths";
-import { Button, CardEmptyAdded, Container, NavBar } from "@/modules/shared";
+import { CardEmptyAdded, Container, NavBar } from "@/modules/shared";
 import type { DashboardStats, Restaurant } from "../types";
 import api from "@/api/axios";
 import { PlusIcon } from "@phosphor-icons/react";
 import SkeletonCardRestaurant from "../components/SkeletonCardRestaurant";
-import GridCardsRestaurants from "../components/GridCardsRestaurants";
 import {
   ArrowDown,
   ArrowUp,
   Coins,
-  SearchIcon,
   Tag,
   Users,
 } from "lucide-react";
 import formatCurrency from "../utils/formatCurrency";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import CardRestaurant from "../components/CardRestaurant";
 
 export default function RestaurantsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [ownerRestaurants, setOwnerRestaurants] = useState<Restaurant[]>([]);
+  const [staffRestaurants, setStaffRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  // const [error, setError] = useState<string | null>(null);
+
+  const isCollaboratorOnly = !loading && ownerRestaurants.length === 0 && staffRestaurants.length > 0;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -33,11 +35,12 @@ export default function RestaurantsPage() {
 
         const [statsRes, restRes] = await Promise.all([
           api.get<DashboardStats>("restaurants/stats"),
-          api.get<Restaurant[]>("restaurants"),
+          api.get<{ owner: Restaurant[], staff: Restaurant[] }>("restaurants"),
         ]);
 
         setStats(statsRes.data);
-        setRestaurants(restRes.data);
+        setOwnerRestaurants(restRes.data.owner);
+        setStaffRestaurants(restRes.data.staff);
       } catch (err: any) {
         console.error("Error al cargar datos", err);
       } finally {
@@ -48,20 +51,20 @@ export default function RestaurantsPage() {
     fetchDashboardData();
   }, []);
 
-  const renderRestaurants = () => {
+  const renderRestaurants = (data: Restaurant[], isOwner: boolean) => {
     if (loading) {
       return (
-        <GridCardsRestaurants>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <SkeletonCardRestaurant key={i} />
           ))}
-        </GridCardsRestaurants>
+        </div>
       );
     }
 
     return (
-      <GridCardsRestaurants>
-        {restaurants.map((restaurant: Restaurant) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data.map((restaurant: Restaurant) => (
           <CardRestaurant
             key={restaurant.id}
             cardId={restaurant.id}
@@ -73,15 +76,21 @@ export default function RestaurantsPage() {
             totalTables={restaurant.total_tables}
             status={restaurant.status}
             dailySales={restaurant.daily_sales}
+            myOrders={restaurant.my_orders}
+            activeStaff={restaurant.active_staff}
             onClick={() => navigate(ROUTES.RESTAURANTS.PANEL(restaurant.id))}
+            role={restaurant.role}
+            isOwner={isOwner}
           />
         ))}
-        <CardEmptyAdded
-          onAction={() => navigate(ROUTES.RESTAURANTS.NEW)}
-          title="Añadir Restaurante"
-          description="Registra un nuevo restaurante"
-        />
-      </GridCardsRestaurants>
+        {isOwner && (
+          <CardEmptyAdded
+            onAction={() => navigate(ROUTES.RESTAURANTS.NEW)}
+            title="Añadir Restaurante"
+            description="Registra un nuevo restaurante"
+          />
+        )}
+      </div>
     );
   };
 
@@ -94,121 +103,132 @@ export default function RestaurantsPage() {
       </div>
       <NavBar />
       <Container>
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-6 md:mb-12">
+        {/* HEADER ADAPTATIVO */}
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12 mt-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 mt-6">
-              Hola, Luis
-              <span className="inline-block animate-wave origin-[70%_70%]">
-                👋
-              </span>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              ¡Hola de nuevo, {user?.name}! <span className="inline-block animate-wave origin-[70%_70%]">👋</span>
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg">
-              Aquí tienes el resumen de tu imperio gastronómico hoy.
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              {isCollaboratorOnly ? "Selecciona un espacio de trabajo para comenzar." : "Selecciona un espacio de trabajo para comenzar."}
             </p>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate(ROUTES.RESTAURANTS.NEW)}
-          >
-            <PlusIcon size={20} /> Nueva Sucursal
-          </Button>
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-white font-bold rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 transition">
+              <i className="fas fa-envelope"></i>
+              <span className="hidden sm:inline">Invitaciones</span>
+            </button>
+            <button
+              onClick={() => navigate(ROUTES.RESTAURANTS.NEW)}
+              className="flex items-center gap-2 px-6 py-3 bg-keleo-600 text-white font-bold rounded-xl shadow-lg shadow-keleo-500/30 hover:bg-keleo-700 transition transform hover:-translate-y-0.5"
+            >
+              <PlusIcon weight="bold" size={20} />
+              <span>Crear Negocio</span>
+            </button>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-12">
-          {/* 1. VENTAS: Hero Card (Ocupa las 2 columnas en móvil, 1 en desktop) */}
-          <div className="col-span-2 md:col-span-1 bg-white dark:bg-dark-card p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition group">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-12 h-12 rounded-xl bg-keleo-50 dark:bg-keleo-900/20 text-keleo-600 flex items-center justify-center text-xl group-hover:scale-110 transition">
-                <Coins size={32} />
+        {/* Global Stats */}
+        {loading ? "" : !isCollaboratorOnly && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            {/* Stat 1: Ventas Totales */}
+            <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/50 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-12 h-12 rounded-xl bg-keleo-50 dark:bg-keleo-900/20 text-keleo-600 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                  <Coins size={24} />
+                </div>
+                {(stats?.sales.percentageComparation || 0) >= 0 ? (
+                  <span className="text-xs font-bold text-green-500 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
+                    <ArrowUp size={14} /> {stats?.sales.percentageComparation || 0}%
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
+                    <ArrowDown size={14} /> {stats?.sales.percentageComparation || 0}%
+                  </span>
+                )}
               </div>
-
-              {/* Bug corregido con los paréntesis */}
-              {(stats?.sales.percentageComparation || 0) >= 0 ? (
-                <span className="text-xs font-bold text-green-500 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
-                  <ArrowUp size={14} />{" "}
-                  {stats?.sales.percentageComparation || 0}%
-                </span>
-              ) : (
-                <span className="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
-                  <ArrowDown size={14} />{" "}
-                  {stats?.sales.percentageComparation || 0}%
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">
-              Ventas Totales (Hoy)
-            </p>
-            <h3 className="text-3xl font-bold text-gray-900 dark:text-white truncate">
-              {formatCurrency(stats?.sales.total || 0)}
-            </h3>
-          </div>
-
-          {/* 2. PEDIDOS: Secundario (Ocupa 1 columna en móvil, se pone al lado del staff) */}
-          <div className="col-span-1 bg-white dark:bg-dark-card p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition group flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center text-lg md:text-xl group-hover:scale-110 transition shrink-0">
-                <Tag size={24} className="md:w-8 md:h-8" />
-              </div>
-              {/* En móvil ocultamos el texto "En vivo" y dejamos un punto para ahorrar espacio, en desktop lo mostramos normal */}
-              <span className="text-[10px] md:text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse md:hidden"></span>
-                <span className="hidden md:inline">En vivo</span>
-              </span>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1 truncate">
-                Pedidos Activos
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+                Ventas Consolidadas
               </p>
-              {/* Letra un poco más pequeña en móvil para que no se corte */}
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(stats?.sales.total || 0)}
+              </h3>
+            </div>
+
+            {/* Stat 2: Pedidos Activos */}
+            <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/50 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                  <Tag size={24} />
+                </div>
+                <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-orange-500"></span> EN VIVO
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+                Órdenes Activas
+              </p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                 {stats?.activeOrders || 0}
               </h3>
             </div>
-          </div>
 
-          {/* 3. STAFF: Secundario (Ocupa 1 columna en móvil) */}
-          <div className="col-span-1 bg-white dark:bg-dark-card p-4 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition group flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center text-lg md:text-xl group-hover:scale-110 transition shrink-0">
-                <Users size={24} className="md:w-8 md:h-8" />
+            {/* Stat 3: Staff */}
+            <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/50 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                  <Users size={24} />
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1 truncate">
-                Staff Activo
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+                Equipo en Turno
               </p>
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-baseline gap-1">
-                {stats?.staff.active || 0}
-                <span className="text-xs md:text-sm font-normal text-gray-400">
-                  / {stats?.staff.total || 0}
-                </span>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {stats?.staff.active || 0} <span className="text-sm font-normal text-gray-400">/ {stats?.staff.total || 0}</span>
               </h3>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            Tus Sucursales
-            <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-2 py-0.5 rounded-full">
-              {restaurants.length}
-            </span>
-          </h2>
-          <div className="relative hidden sm:block">
-            <SearchIcon
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="pl-10 pr-4 py-2 rounded-xl border-none bg-white dark:bg-dark-card shadow-sm text-sm w-64 focus:ring-2 focus:ring-keleo-500 transition placeholder-gray-400 dark:text-white"
-            />
-          </div>
-        </div>
+        {isCollaboratorOnly ? (
+          <>
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Colaboraciones</h2>
+                <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full font-bold">STAFF</span>
+              </div>
+              {renderRestaurants(staffRestaurants, false)}
+            </section>
 
-        {renderRestaurants()}
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6 mt-12">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Mis Restaurantes</h2>
+                <span className="bg-keleo-100 dark:bg-keleo-900/40 text-keleo-600 dark:text-keleo-400 text-xs px-2 py-0.5 rounded-full font-bold">PROPIETARIO</span>
+              </div>
+              {renderRestaurants(ownerRestaurants, true)}
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Mis Restaurantes</h2>
+                <span className="bg-keleo-100 dark:bg-keleo-900/40 text-keleo-600 dark:text-keleo-400 text-xs px-2 py-0.5 rounded-full font-bold">PROPIETARIO</span>
+              </div>
+              {renderRestaurants(ownerRestaurants, true)}
+            </section>
+
+            {(!loading && staffRestaurants.length > 0) && (
+              <section className="mb-12">
+                <div className="flex items-center gap-3 mb-6 mt-12">
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white">Colaboraciones</h2>
+                  <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full font-bold">STAFF</span>
+                </div>
+                {renderRestaurants(staffRestaurants, false)}
+              </section>
+            )}
+          </>
+        )}
       </Container>
     </>
   );

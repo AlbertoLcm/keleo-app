@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import api from "@/api/axios";
 import { useParams, useSearchParams } from "react-router";
 import type { Table, Zone } from "../types";
+import { useRestaurantRole } from "@/modules/restaurants";
 
 type ViewModeType = "grid" | "list";
 
@@ -23,6 +24,8 @@ export default function TablesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<ViewModeType>("grid");
+  const { role } = useRestaurantRole();
+  const canAddTable = ['owner', 'admin', 'manager', 'waiter'].includes(role || '');
   // const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [tables, setTables] = useState<Table[]>([]);
@@ -118,17 +121,19 @@ export default function TablesPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold"
-          >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Nueva Mesa</span>
-          </button>
+          {canAddTable && (
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold"
+            >
+              <Plus size={20} />
+              <span className="hidden sm:inline">Nueva Mesa</span>
+            </button>
+          )}
         </div>
       </section>
     ),
-    [viewMode],
+    [viewMode, canAddTable],
   );
 
   useEffect(() => {
@@ -168,7 +173,7 @@ export default function TablesPage() {
             accountId={table.account_id}
           />
         ))}
-        {tables.length === 0 && (
+        {tables.length === 0 && canAddTable && (
           <CardEmptyAdded
             onAction={() => setIsDrawerOpen(true)}
             title="Añadir Mesa"
@@ -177,7 +182,7 @@ export default function TablesPage() {
         )}
       </GridCardsTables>
     );
-  }, [loading, tables]);
+  }, [loading, tables, canAddTable]);
 
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 

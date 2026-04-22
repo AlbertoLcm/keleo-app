@@ -27,25 +27,20 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
   useEffect(() => {
     if (!restaurantId) return;
 
-    // Conectar al backend WebSocket (usamos la misma URL base que la API)
-    const backendUrl = import.meta.env.VITE_API_URL || 'https://api.keleo.app';
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const socketInstance = io(backendUrl, {
-      path: '/socket.io', // ruta por defecto de NestJS websockets
+      path: '/socket.io',
     });
 
     setSocket(socketInstance);
 
     socketInstance.on('connect', () => {
       setIsConnected(true);
-      console.log('🔗 Conectado a WebSocket con ID:', socketInstance.id);
-      
-      // Emitimos el join a la sala del restaurante
       socketInstance.emit('joinRestaurantRoom', { restaurantId, userId: user?.id });
     });
 
     socketInstance.on('disconnect', () => {
       setIsConnected(false);
-      console.log('❌ Desconectado del WebSocket');
     });
 
     return () => {

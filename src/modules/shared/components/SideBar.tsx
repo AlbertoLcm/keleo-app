@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import KeleoLogo from "./LogoKeleo";
+import { useRestaurantRole } from "@/modules/restaurants";
 
 interface SideBarProps {
   isSidebarOpen: Boolean;
@@ -25,6 +26,12 @@ const navLinkClasses = ({ isActive }: { isActive: Boolean }): string =>
   }`;
 
 const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
+  const { role } = useRestaurantRole();
+
+  const isOwnerOrAdmin = role === 'owner' || role === 'admin';
+  const isManagerOrAbove = isOwnerOrAdmin || role === 'manager';
+  const isKitchenOrAbove = isManagerOrAbove || role === 'kitchen';
+
   return (
     <aside
       className={`
@@ -65,29 +72,37 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
           <span>Mesas</span>
         </NavLink>
 
-        <NavLink to={ROUTES.KITCHEN.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-          <ChefHat />
-          <span>Cocina</span>
-        </NavLink>
+        {isKitchenOrAbove && (
+          <NavLink to={ROUTES.KITCHEN.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
+            <ChefHat />
+            <span>Cocina</span>
+          </NavLink>
+        )}
 
-        <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 pl-4">
-          Gestión
-        </p>
+        {isManagerOrAbove && (
+          <>
+            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 pl-4">
+              Gestión
+            </p>
 
-        <NavLink to={ROUTES.MENU.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-          <BookOpenText />
-          <span>Menú y Platillos</span>
-        </NavLink>
+            <NavLink to={ROUTES.MENU.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
+              <BookOpenText />
+              <span>Menú y Platillos</span>
+            </NavLink>
 
-        <NavLink to={ROUTES.EMPLOYEES.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-          <Users />
-          <span>Empleados</span>
-        </NavLink>
+            <NavLink to={ROUTES.EMPLOYEES.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
+              <Users />
+              <span>Empleados</span>
+            </NavLink>
+          </>
+        )}
 
-        <NavLink to={ROUTES.SETTINGS.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-          <Settings />
-          <span>Configuración</span>
-        </NavLink>
+        {isOwnerOrAdmin && (
+          <NavLink to={ROUTES.SETTINGS.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
+            <Settings />
+            <span>Configuración</span>
+          </NavLink>
+        )}
       </div>
 
       <div className="p-4 border-t border-gray-200/50 dark:border-white/5">

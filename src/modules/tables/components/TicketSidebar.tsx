@@ -63,7 +63,7 @@ export const TicketSidebar = ({
           }}
           className="ticket-hidden lg:ticket-visible fixed inset-0 lg:static lg:inset-auto z-50 w-full lg:w-96 flex flex-col bg-gray-50 dark:bg-dark-bg lg:bg-transparent transition-transform duration-300 ease-out lg:border-l lg:border-gray-200 lg:dark:border-white/5"
         >
-          <div className="px-4 h-16 border-b border-gray-200 dark:border-white/5 flex justify-between items-center shadow-sm lg:shadow-none">
+          <div className="bg-white dark:bg-dark-card px-4 h-16 border-b border-gray-200 dark:border-white/5 flex justify-between items-center shadow-sm lg:shadow-none">
             <h2 className="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
               <Receipt className="text-keleo-500" /> Orden Actual
             </h2>
@@ -161,14 +161,13 @@ export const TicketSidebar = ({
               </div>
             </div>
 
-            <button 
+            <button
               onClick={onSendToKitchen}
               disabled={isSending || items.length === 0 || isLocked}
-              className={`w-full py-3.5 rounded-xl shadow-lg font-bold text-base transition transform active:scale-[0.98] flex items-center justify-center gap-2 mb-2 ${
-                 isLocked 
-                 ? "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500 cursor-not-allowed shadow-none"
-                 : "bg-keleo-600 hover:bg-keleo-700 text-white shadow-keleo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-              }`}>
+              className={`w-full py-3.5 rounded-xl shadow-lg font-bold text-base transition transform active:scale-[0.98] flex items-center justify-center gap-2 mb-2 ${isLocked
+                  ? "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500 cursor-not-allowed shadow-none"
+                  : "bg-keleo-600 hover:bg-keleo-700 text-white shadow-keleo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                }`}>
               <Send size={18} />
               {isSending ? "Enviando..." : `Enviar a Cocina (${items.reduce((acc, i) => acc + i.quantity, 0)})`}
             </button>

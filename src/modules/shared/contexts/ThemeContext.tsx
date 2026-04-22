@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "system";
 const THEME_KEY = "keleo-theme";
 
 const LIGHT_COLOR = "#ffffff";
@@ -9,7 +9,7 @@ const DARK_COLOR = "#020617";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme: () => void;
+  actualTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
 }
 
@@ -18,25 +18,27 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const storedTheme = localStorage.getItem(THEME_KEY) as Theme;
-    if (storedTheme) return storedTheme;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
+        return storedTheme;
+    }
+    return "system";
   });
+
+  const [actualTheme, setActualTheme] = useState<"light" | "dark">("light");
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_KEY, newTheme);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
   useEffect(() => {
     const root = window.document.documentElement;
+    const isDarkOS = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    if (theme === "dark") {
+    const resolvedTheme = theme === "system" ? (isDarkOS ? "dark" : "light") : theme as "light" | "dark";
+    setActualTheme(resolvedTheme);
+
+    if (resolvedTheme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
@@ -50,7 +52,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       document.head.appendChild(metaThemeColor);
     }
 
-    const newColor = theme === "dark" ? DARK_COLOR : LIGHT_COLOR;
+    const newColor = resolvedTheme === "dark" ? DARK_COLOR : LIGHT_COLOR;
     metaThemeColor.setAttribute("content", newColor);
 
     const metaApple = document.querySelector(
@@ -59,24 +61,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (metaApple) {
       metaApple.setAttribute(
         "content",
-        theme === "dark" ? "black-translucent" : "default",
+        resolvedTheme === "dark" ? "black-translucent" : "default",
       );
     }
   }, [theme]);
 
-  // Sync theme across different tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === THEME_KEY && (e.newValue === "light" || e.newValue === "dark")) {
+      if (e.key === THEME_KEY && (e.newValue === "light" || e.newValue === "dark" || e.newValue === "system")) {
         setThemeState(e.newValue);
       }
     };
     
-    // Sync with system preferences if no theme is strictly set yet (or follow if user wants system default)
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-        if (!localStorage.getItem(THEME_KEY)) {
-            setThemeState(e.matches ? "dark" : "light");
-        }
+    const handleMediaChange = () => {
+      if (theme === "system") {
+        // Trigger a re-render to recalculate the actual theme
+        setThemeState("system"); 
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -88,10 +89,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("storage", handleStorageChange);
       mediaQuery.removeEventListener("change", handleMediaChange);
     };
-  }, []);
+  }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, actualTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

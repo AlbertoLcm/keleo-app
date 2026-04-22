@@ -20,8 +20,11 @@ export interface Restaurant {
   postal_code: string;
   logo_url: string;
   tables_in_use: number;
+  role: string;
   total_tables: number;
   daily_sales: number;
+  my_orders?: number;
+  active_staff?: number;
   status: "open" | "closed";
 }
 

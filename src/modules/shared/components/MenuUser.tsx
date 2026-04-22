@@ -1,8 +1,9 @@
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useEffect, useState, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useNavigate } from "react-router";
+import { ROUTES } from "@/routes/paths";
 
-import { User, Settings, LogOut, CreditCard } from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 import { getInitialsString } from "@/utils/getInitialsString";
 
 interface MenuItemProps {
@@ -22,11 +23,10 @@ const MenuOption: React.FC<MenuItemProps> = ({
     <button
       onClick={onClick}
       className={`
-        w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-200 cursor-pointer 
-        ${
-          isDanger
-            ? "text-red-800 dark:text-red-300 hover:bg-red-400 dark:hover:bg-red-500/20 hover:text-red-100"
-            : "text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+        w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors duration-200 cursor-pointer 
+        ${isDanger
+          ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
         }
       `}
     >
@@ -38,6 +38,7 @@ const MenuOption: React.FC<MenuItemProps> = ({
 
 const MenuUser: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -49,65 +50,68 @@ const MenuUser: React.FC = () => {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
+  const fullName = `${user?.name || ""} ${user?.lastname || ""}`.trim();
+
   return (
-    <div className="relative z-50">
+    <div className="relative z-50" ref={menuRef}>
       <button
         onClick={() => setMenuOpen(!isMenuOpen)}
         className="
-        transition-transform duration-150 active:scale-90
+        transition-transform duration-150 active:scale-95
         select-none w-9 h-9 rounded-full bg-gradient-to-br
-        border-none
+        border-none outline-none focus:ring-2 focus:ring-keleo-500/50 focus:ring-offset-2 dark:focus:ring-offset-dark-bg
         from-keleo-500 to-indigo-500 p-[2px] cursor-pointer shadow-md shadow-keleo-500/20"
       >
-        <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-xs font-bold text-keleo-600 dark:text-keleo-400">
-          {getInitialsString(user?.name || "" + " " + user?.lastname || "")}
-        </div>
+        {user?.profile_image ? (
+          <img
+            src={user.profile_image}
+            alt={fullName}
+            className="w-full h-full rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full rounded-full bg-white dark:bg-dark-card flex items-center justify-center text-xs font-bold text-keleo-600 dark:text-keleo-400">
+            {getInitialsString(fullName)}
+          </div>
+        )}
       </button>
 
-      {isMenuOpen &&
-        createPortal(
-          <div
-            style={{
-              top: 50,
-              right: 25,
-            }}
-            ref={menuRef}
-            className="
-              bg-white dark:bg-dark-card absolute right-0 mt-3 w-64 origin-top-right rounded-xl overflow-hidden border shadow-2xl z-46
-             border-white/50 dark:border-white/5
-            "
-          >
-            {/* Encabezado del menú */}
-            <div className="px-5 py-4 border-b border-gray-200/50 bg-gray-200/50 dark:border-white/10 dark:bg-white/5">
-              <p className="text-sm font-medium text-gray-800 dark:text-white">
-                {user?.name || "" + " " + user?.lastname || ""}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-white/50 truncate">{user?.email}</p>
-            </div>
+      {isMenuOpen && (
+        <div
+          className="
+            absolute right-0 mt-3 w-64 origin-top-right rounded-2xl overflow-hidden shadow-xl
+            bg-white dark:bg-dark-card border border-gray-100 dark:border-white/5
+            animate-in fade-in zoom-in-95 duration-200
+          "
+        >
+          {/* Encabezado del menú */}
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
+            <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+              {fullName}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{user?.email}</p>
+          </div>
 
-            {/* Opciones */}
-            <div className="py-2">
-              <MenuOption icon={User} label="Mi Perfil" />
-              <MenuOption icon={CreditCard} label="Suscripción" />
-              <MenuOption icon={Settings} label="Configuración" />
-            </div>
+          {/* Opciones */}
+          <div className="py-2">
+            <MenuOption icon={Settings} label="Preferencias de la cuenta" onClick={() => { navigate(ROUTES.GLOBAL_SETTINGS); setMenuOpen(false); }} />
+          </div>
 
-            <div className="h-px bg-white/10 mx-2"></div>
+          <div className="h-px bg-gray-100 mx-3 dark:bg-white/5"></div>
 
-            {/* Cerrar Sesión */}
-            <div className="py-2">
-              <MenuOption
-                icon={LogOut}
-                label="Cerrar sesión"
-                isDanger
-                onClick={logout}
-              />
-            </div>
-          </div>,
-          document.body
-        )}
+          {/* Cerrar Sesión */}
+          <div className="py-2">
+            <MenuOption
+              icon={LogOut}
+              label="Cerrar sesión"
+              isDanger
+              onClick={logout}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

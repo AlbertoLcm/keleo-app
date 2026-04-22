@@ -5,7 +5,7 @@ interface Props extends React.HTMLAttributes<HTMLElement> {
 
 const Container: React.FC<Props> = ({ className, children }) => {
   return (
-    <section className={`container mx-auto p-4 md:p-6 ${className ? className : ""}`}>
+    <section className={`container mx-auto max-w-7xl p-4 md:p-6 ${className ? className : ""}`}>
       {children}
     </section>
   )

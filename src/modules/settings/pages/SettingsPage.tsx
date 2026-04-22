@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Store, Image as ImageIcon, Clock, Settings, Save, Trash2 } from "lucide-react";
-import { Toggle, useHeaderAction } from "@/modules/shared";
+import { Store, Image as ImageIcon, Clock, Settings, Save, Trash2, Palette } from "lucide-react";
+import { Toggle, useHeaderAction, useDarkMode } from "@/modules/shared";
 import { useParams, useNavigate } from "react-router";
 import {
   getRestaurantSettings,
@@ -38,6 +38,7 @@ const SettingsPage = () => {
   const { restaurantId } = useParams();
   const navigate = useNavigate();
   const { updateActionHeader } = useHeaderAction();
+  const { theme, setTheme } = useDarkMode();
 
   const [restaurant, setRestaurant] = useState<RestaurantSettingsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,34 +168,11 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-      <div className="hidden lg:block lg:col-span-1">
-        <nav className="space-y-1 sticky top-0">
-          <a
-            href="#perfil"
-            className="flex items-center gap-3 px-4 py-3 bg-white/60 dark:bg-white/10 backdrop-blur-md rounded-xl text-sm font-bold text-keleo-700 dark:text-white border-l-4 border-keleo-600 shadow-sm transition"
-          >
-            Perfil y Marca
-          </a>
-          <a
-            href="#horarios"
-            className="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-white/5 rounded-xl text-sm font-medium transition"
-          >
-            Horarios de Atención
-          </a>
-          <a
-            href="#cocina"
-            className="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-white/5 rounded-xl text-sm font-medium transition"
-          >
-            Operación y Cocina
-          </a>
-        </nav>
-      </div>
-
-      <div className="lg:col-span-3 space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+      <div className="space-y-6">
         <section
           id="perfil"
-          className="bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6"
+          className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm"
         >
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
             <Store className="text-keleo-500 mr-2 inline" /> Perfil del
@@ -267,7 +245,7 @@ const SettingsPage = () => {
 
         <section
           id="horarios"
-          className="bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6"
+          className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm"
         >
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
             <Clock className="text-keleo-500 mr-2 inline" /> Horarios de
@@ -320,7 +298,7 @@ const SettingsPage = () => {
 
         <section
           id="cocina"
-          className="bg-white/60 dark:bg-dark-card/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 dark:border-white/5 p-6"
+          className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm"
         >
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
             <Settings className="text-keleo-500 mr-2 inline" /> Operación y Cocina
@@ -374,7 +352,44 @@ const SettingsPage = () => {
           </div>
         </section>
 
-        <section className="bg-red-50/50 dark:bg-red-900/10 backdrop-blur-md rounded-2xl shadow-sm border border-red-100 dark:border-red-900/20 p-6">
+        <section
+          id="apariencia"
+          className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm"
+        >
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
+            <Palette className="text-keleo-500 mr-2 inline" /> Apariencia de la App
+          </h2>
+
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-white">
+                  Tema de la Aplicación
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Elige el esquema de colores para interactuar con Keleo
+                </p>
+              </div>
+              <div className="flex bg-gray-100 dark:bg-dark-bg p-1 rounded-xl w-fit">
+                {(["light", "dark", "system"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTheme(t)}
+                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                      theme === t
+                        ? "bg-white dark:bg-gray-700 text-keleo-600 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    {t === "light" ? "Claro" : t === "dark" ? "Oscuro" : "Automático"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
           <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
             <Trash2 size={20} /> Zona de Peligro
           </h2>
