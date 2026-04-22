@@ -1,6 +1,6 @@
 import { useRestaurantRole } from "@/modules/restaurants";
 import { Navigate } from "react-router";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { LoadingScreen } from "@/modules/shared";
 
 interface RoleProtectedRouteProps {
