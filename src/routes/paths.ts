@@ -23,5 +23,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: "/forgot-password",
   PROFILE: "/profile",
   SUBSCRIPTION: "/subscription",
+  SUBSCRIPTION_SUCCESS: "/subscription/success",
+  SUBSCRIPTION_CANCEL: "/subscription/cancel",
   GLOBAL_SETTINGS: "/settings",
 };

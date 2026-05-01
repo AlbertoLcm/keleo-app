@@ -15,7 +15,7 @@ import EmployeesPage from "@/modules/employees/pages/EmployeesPage";
 import { MenuPage } from "@/modules/menu";
 import { SettingsPage } from "@/modules/settings";
 import ScrollToTop from "@/modules/shared/components/ScrollTop";
-import { ProfilePage, SubscriptionPage, GlobalSettingsPage } from "@/modules/user";
+import { ProfilePage, SubscriptionPage, GlobalSettingsPage, SubscriptionSuccessPage, SubscriptionCancelPage } from "@/modules/user";
 
 export default function AppRoutes() {
   return (
@@ -80,6 +80,22 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <SubscriptionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.SUBSCRIPTION_SUCCESS}
+          element={
+            <ProtectedRoute>
+              <SubscriptionSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.SUBSCRIPTION_CANCEL}
+          element={
+            <ProtectedRoute>
+              <SubscriptionCancelPage />
             </ProtectedRoute>
           }
         />

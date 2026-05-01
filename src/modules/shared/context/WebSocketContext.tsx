@@ -27,7 +27,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
   useEffect(() => {
     if (!restaurantId) return;
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const backendUrl = import.meta.env.VITE_API_URL || 'https://api.keleo.app';
     const socketInstance = io(backendUrl, {
       path: '/socket.io',
     });

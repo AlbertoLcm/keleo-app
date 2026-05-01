@@ -5,14 +5,37 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { getInitialsString } from "@/utils/getInitialsString";
 import { useNavigate } from "react-router";
 import { ROUTES } from "@/routes/paths";
+import { useSubscriptionContext, subscriptionService } from "@/modules/subscriptions";
 
 export default function GlobalSettingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { plan, subscription, isLoading: subLoading } = useSubscriptionContext();
   const [theme, setTheme] = useState("system");
   const [notifications, setNotifications] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const fullName = `${user?.name || ""} ${user?.lastname || ""}`.trim();
+
+  const planLabels: Record<string, { name: string; color: string }> = {
+    free: { name: "Free", color: "text-gray-500 dark:text-gray-400" },
+    basic: { name: "Básico", color: "text-keleo-600 dark:text-keleo-400" },
+    pro: { name: "Pro", color: "text-indigo-600 dark:text-indigo-400" },
+  };
+
+  const currentPlan = planLabels[plan] ?? planLabels.free;
+
+  const handleManageBilling = async () => {
+    try {
+      setPortalLoading(true);
+      const { url } = await subscriptionService.createBillingPortal();
+      window.location.href = url;
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Error al abrir el portal de pagos.");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg transition-colors duration-200 pb-12">
@@ -113,13 +136,18 @@ export default function GlobalSettingsPage() {
                 <div className="w-full">
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-bold mb-3 border border-green-200/50 dark:border-green-500/20">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    Activa
+                    {subscription?.status === 'active' ? 'Activa' : subscription?.status === 'past_due' ? 'Pago pendiente' : 'Activa'}
                   </div>
-                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white flex items-baseline gap-2">
-                    Plan Pro
+                  <h4 className={`text-2xl font-bold flex items-baseline gap-2 ${currentPlan.color}`}>
+                    {subLoading ? <span className="w-24 h-7 bg-gray-200 dark:bg-white/5 animate-pulse rounded-lg inline-block" /> : `Plan ${currentPlan.name}`}
                   </h4>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
-                    Tu suscripción actual se renovará automáticamente en tu próxima fecha de facturación.
+                    {plan === 'free'
+                      ? 'Estás en el plan gratuito. Actualiza para desbloquear más funciones.'
+                      : subscription?.current_period_end
+                        ? `Tu suscripción se renueva el ${new Date(subscription.current_period_end).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}.`
+                        : 'Tu suscripción se renovará automáticamente en tu próxima fecha de facturación.'
+                    }
                   </p>
                 </div>
                 
@@ -129,9 +157,14 @@ export default function GlobalSettingsPage() {
                     className="w-full md:w-auto px-5 py-2.5 bg-keleo-50 dark:bg-keleo-900/20 text-keleo-600 dark:text-keleo-400 border border-keleo-200 dark:border-keleo-500/20 hover:bg-keleo-100 dark:hover:bg-keleo-900/40 text-sm font-bold rounded-xl transition-colors text-center">
                     Ver planes disponibles
                   </button>
-                  <button className="w-full md:w-auto px-5 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 text-sm font-bold rounded-xl transition-colors shadow-sm active:scale-[0.98] text-center">
-                    Gestionar pago
-                  </button>
+                  {plan !== 'free' && (
+                    <button
+                      onClick={handleManageBilling}
+                      disabled={portalLoading}
+                      className="w-full md:w-auto px-5 py-2.5 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 text-sm font-bold rounded-xl transition-colors shadow-sm active:scale-[0.98] text-center disabled:opacity-60">
+                      {portalLoading ? 'Cargando...' : 'Gestionar pago'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
