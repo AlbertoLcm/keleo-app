@@ -11,17 +11,18 @@ import {
 import {
   Button,
   InputText,
-  useLockBodyScroll,
 } from "@/modules/shared";
 import api from "@/api/axios";
 import { useParams } from "react-router";
-import type { Category } from "../models/menu.model";
+import type { Category, Product } from "../models/menu.model";
+import { updateProduct } from "../services/menu.service";
 
 interface NewProductFormProps {
   onCancel: () => void;
   onUpdateProducts: () => void;
   categories: Category[];
   onCategoryAdded: (category: Category) => void;
+  product?: Product;
 }
 
 const NewProductForm: React.FC<NewProductFormProps> = ({
@@ -29,8 +30,8 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
   onUpdateProducts,
   categories,
   onCategoryAdded,
+  product,
 }) => {
-  useLockBodyScroll();
   const { restaurantId } = useParams();
 
   const [formData, setFormData] = useState({
@@ -56,10 +57,26 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
   const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
-    if (categories.length > 0 && !formData.categoryId) {
-      setFormData((prev) => ({ ...prev, categoryId: categories[0].id }));
+    if (product) {
+      setFormData({
+        name: product.name,
+        description: product.description || "",
+        price: String(product.price),
+        available: product.available,
+        categoryId: product.category_id || "",
+        image: product.image || "",
+      });
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        available: true,
+        categoryId: categories.length > 0 ? categories[0].id : "",
+        image: "",
+      });
     }
-  }, [categories, formData.categoryId]);
+  }, [product, categories]);
 
   const handleAddCategory = async () => {
     const trimmedName = newCategoryName.trim();
@@ -113,15 +130,26 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
     setErrors((prev) => ({ ...prev, form: [] }));
 
     try {
-      await api.post("products", {
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        available: formData.available,
-        restaurantId,
-        categoryId: formData.categoryId,
-        image: formData.image,
-      });
+      if (product) {
+        await updateProduct(product.id, restaurantId!, {
+          name: formData.name,
+          description: formData.description,
+          price: Number(formData.price),
+          available: formData.available,
+          categoryId: formData.categoryId,
+          image: formData.image,
+        });
+      } else {
+        await api.post("products", {
+          name: formData.name,
+          description: formData.description,
+          price: Number(formData.price),
+          available: formData.available,
+          restaurantId,
+          categoryId: formData.categoryId,
+          image: formData.image,
+        });
+      }
       onUpdateProducts();
       onCancel();
     } catch (err: any) {
@@ -166,7 +194,7 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
           }
           required
         />
-        
+
         <InputText
           id="descProduct"
           label="DESCRIPCIÓN"
@@ -208,9 +236,8 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
                   type="checkbox"
                   name="available"
                   id="availableToggle"
-                  className={`toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ${
-                    formData.available ? "right-0 border-keleo-600" : "right-5"
-                  }`}
+                  className={`toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ${formData.available ? "right-0 border-keleo-600" : "right-5"
+                    }`}
                   checked={formData.available}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, available: e.target.checked }))
@@ -218,9 +245,8 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
                 />
                 <label
                   htmlFor="availableToggle"
-                  className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${
-                    formData.available ? "bg-keleo-600" : "bg-gray-300"
-                  }`}
+                  className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer ${formData.available ? "bg-keleo-600" : "bg-gray-300"
+                    }`}
                 ></label>
               </div>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -296,11 +322,10 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, categoryId: category.id }))
                 }
-                className={`py-2.5 px-4 rounded-xl border text-sm font-bold transition-all truncate ${
-                  formData.categoryId === category.id
-                    ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
-                    : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
-                }`}
+                className={`py-2.5 px-4 rounded-xl border text-sm font-bold transition-all truncate ${formData.categoryId === category.id
+                  ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
+                  : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
+                  }`}
               >
                 {category.name || "Sin nombre"}
               </button>
@@ -326,9 +351,9 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
         />
         {formData.image && (
           <div className="mt-2 h-32 w-full rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-            <img 
-              src={formData.image} 
-              alt="Preview" 
+            <img
+              src={formData.image}
+              alt="Preview"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -349,7 +374,7 @@ const NewProductForm: React.FC<NewProductFormProps> = ({
           Cancelar
         </Button>
         <Button type="submit" className="w-2/3" loading={uiState.isSendingForm}>
-          <Save size={20} className="mr-2" /> Guardar Producto
+          <Save size={20} className="mr-2" /> {product ? "Guardar Cambios" : "Guardar Producto"}
         </Button>
       </div>
     </form>

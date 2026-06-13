@@ -154,7 +154,7 @@ const EmployeesPage = () => {
         <MetricCard
           className="bg-white dark:bg-dark-card overflow-hidden group"
           title="Empleado del Mes"
-          value="Juan Pérez"
+          value="-"
           icon={<Trophy />}
           color="yellow"
           valueClassName="text-lg text-gray-800 dark:text-white"
@@ -262,7 +262,7 @@ const EmployeesPage = () => {
         title="Eliminar Empleado"
         footer={
           <div className="flex gap-2 w-full justify-end">
-            <button onClick={() => setEmployeeToDelete(null)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition">Cancelar</button>
+            <button onClick={() => setEmployeeToDelete(null)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition">Cancelar</button>
             <button onClick={handleDelete} className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition">Eliminar</button>
           </div>
         }
@@ -274,9 +274,10 @@ const EmployeesPage = () => {
         isOpen={!!employeeToEdit}
         onClose={() => setEmployeeToEdit(null)}
         title="Modificar Rol"
+        description="Asignación de nuevo puesto"
         footer={
-          <div className="flex gap-2 w-full justify-end mt-4">
-            <button onClick={() => setEmployeeToEdit(null)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition">Cancelar</button>
+          <div className="flex gap-2 w-full justify-end">
+            <button onClick={() => setEmployeeToEdit(null)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition">Cancelar</button>
             <button onClick={handleEditRole} className="px-4 py-2 text-sm font-bold text-white bg-keleo-600 rounded-xl hover:bg-keleo-700 transition shadow-md shadow-keleo-500/20">Guardar</button>
           </div>
         }
@@ -295,8 +296,8 @@ const EmployeesPage = () => {
                 key={role.id}
                 onClick={() => setNewRole(role.id)}
                 className={`py-2 px-4 rounded-xl border text-sm font-bold transition-all ${newRole === role.id
-                    ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
-                    : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400"
+                  ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
+                  : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400"
                   }`}
               >
                 {role.label}

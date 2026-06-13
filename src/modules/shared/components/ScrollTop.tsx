@@ -8,7 +8,7 @@ const ScrollToTop = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  return null; // Este componente no renderiza nada visualmente
+  return null;
 };
 
 export default ScrollToTop;

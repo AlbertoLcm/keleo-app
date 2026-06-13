@@ -6,24 +6,23 @@ import {
   NewTableForm,
 } from "..";
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { LayoutGrid, List, Plus, X } from "lucide-react";
+import { Plus, X, CalendarClock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import api from "@/api/axios";
 import { useParams, useSearchParams } from "react-router";
 import type { Table, Zone } from "../types";
 import { useRestaurantRole } from "@/modules/restaurants";
-
-type ViewModeType = "grid" | "list";
+import ReservationsDrawer from "../components/ReservationsDrawer";
 
 export default function TablesPage() {
   const { updateActionHeader } = useHeaderAction();
   let { restaurantId } = useParams();
   const { socket } = useWebSocket();
-  
+
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<ViewModeType>("grid");
+  const [isReservationsOpen, setIsReservationsOpen] = useState<boolean>(false);
   const { role } = useRestaurantRole();
   const canAddTable = ['owner', 'admin', 'manager', 'waiter'].includes(role || '');
   // const [error, setError] = useState<string | null>(null);
@@ -97,43 +96,29 @@ export default function TablesPage() {
           </p>
         </div>
 
-        <div className="flex">
-          <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-lg mr-2">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md cursor-pointer transition-colors ${
-                viewMode === "grid"
-                  ? "bg-white dark:bg-white/20 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <LayoutGrid size={16} />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md cursor-pointer transition-colors ${
-                viewMode === "list"
-                  ? "bg-white dark:bg-white/20 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <List size={16} />
-            </button>
-          </div>
-
+        <div className="flex gap-2">
           {canAddTable && (
-            <button
-              onClick={() => setIsDrawerOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold"
-            >
-              <Plus size={20} />
-              <span className="hidden sm:inline">Nueva Mesa</span>
-            </button>
+            <>
+              <button
+                onClick={() => setIsReservationsOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-lg shadow-amber-500/20 transition text-sm font-bold cursor-pointer"
+              >
+                <CalendarClock size={18} />
+                <span className="hidden sm:inline">Reservas</span>
+              </button>
+              <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-keleo-600 hover:bg-keleo-700 text-white rounded-xl shadow-lg shadow-keleo-500/20 transition text-sm font-bold cursor-pointer"
+              >
+                <Plus size={20} />
+                <span className="hidden sm:inline">Nueva Mesa</span>
+              </button>
+            </>
           )}
         </div>
       </section>
     ),
-    [viewMode, canAddTable],
+    [canAddTable],
   );
 
   useEffect(() => {
@@ -280,6 +265,12 @@ export default function TablesPage() {
           </>
         )}
       </AnimatePresence>
+
+      <ReservationsDrawer
+        isOpen={isReservationsOpen}
+        onClose={() => setIsReservationsOpen(false)}
+        tables={tables}
+      />
     </>
   );
 }

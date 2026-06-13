@@ -3,7 +3,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   AUTH_SUCCESS: "/auth/success",
-  RESTAURANTS: { 
+  RESTAURANTS: {
     INDEX: "/restaurants",
     PANEL: (restaurantId: string | string = ":restaurantId") => `/restaurants/${restaurantId}`,
     NEW: "/restaurants/new"
@@ -19,6 +19,7 @@ export const ROUTES = {
     DETAIL: (id: string | string = ":tableId") => `${id}`,
   },
   SETTINGS: { INDEX: "config" },
+  CASH_REGISTER: { INDEX: "cash-register" },
   VERIFY: "/verify",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",

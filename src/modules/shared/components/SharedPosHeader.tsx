@@ -181,7 +181,7 @@ export const SharedPosHeader = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-dark-card rounded-xl shadow-xl border border-gray-100 dark:border-white/10 overflow-hidden z-50 flex flex-col"
+                  className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-dark-card rounded-xl shadow-xl border border-gray-100 dark:border-white/10 overflow-hidden flex flex-col"
                 >
                   {status === "payment" && onReopen && (
                     <button
@@ -199,8 +199,8 @@ export const SharedPosHeader = ({
                       onClick={handleCancel}
                       disabled={isProcessing}
                       className={`flex items-center gap-2 px-4 py-3 text-sm transition text-left ${confirmCancel
-                          ? "bg-red-500 text-white hover:bg-red-600"
-                          : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                         } ${status === "payment" && onReopen ? "border-t border-gray-100 dark:border-white/5" : ""}`}
                     >
                       {isProcessing ? (
@@ -226,7 +226,7 @@ export const SharedPosHeader = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
-            className="absolute inset-0 z-10 flex items-center gap-3 bg-white dark:bg-dark-bg"
+            className="absolute inset-0 z-51 flex items-center gap-3 bg-white dark:bg-dark-bg"
           >
             {/* Search input with back button inside — fills full width */}
             <div className="relative flex-1 flex items-center h-9 rounded-full bg-gray-100 dark:bg-white/8 focus-within:ring-2 focus-within:ring-keleo-500/30 transition-all duration-200">

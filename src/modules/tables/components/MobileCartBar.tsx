@@ -9,7 +9,7 @@ interface MobileCartBarProps {
 export const MobileCartBar = ({ onOpenTicket, itemsCount, total }: MobileCartBarProps) => {
   return (
     <div
-      className="bg-white dark:bg-dark-card fixed bottom-4 left-4 right-4 z-40 lg:hidden rounded-2xl p-3 flex items-center justify-between cursor-pointer transform duration-200 border border-white/20 shadow-2xl"
+      className="bg-white dark:bg-dark-card fixed bottom-4 left-4 right-4 z-20 lg:hidden rounded-2xl p-3 flex items-center justify-between cursor-pointer transform duration-200 border border-white/20 shadow-2xl"
       onClick={onOpenTicket}
     >
       <div className="flex items-center gap-3">

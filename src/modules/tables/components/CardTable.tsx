@@ -187,7 +187,7 @@ const TableCard: React.FC<TableCardProps> = ({
           <div className="flex items-center gap-2 mb-1">
             <Clock className="text-amber-500" size={20} />
             <span className="font-bold text-gray-800 dark:text-white">
-              {reservationTime}
+              {new Date(reservationTime || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -207,14 +207,13 @@ const TableCard: React.FC<TableCardProps> = ({
                   : "Inicia en"}
             </p>
             <p
-              className={`text-lg font-bold ${
-                status === "occupied"
-                  ? "text-keleo-600 dark:text-keleo-400"
-                  : "text-gray-800 dark:text-white"
-              }`}
+              className={`text-lg font-bold ${status === "occupied"
+                ? "text-keleo-600 dark:text-keleo-400"
+                : "text-gray-800 dark:text-white"
+                }`}
             >
               {status === "reserved"
-                ? timeUntilReservation
+                ? new Date(timeUntilReservation || "").toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 : `$${totalAmount?.toLocaleString()}`}
             </p>
           </div>
@@ -226,16 +225,20 @@ const TableCard: React.FC<TableCardProps> = ({
             >
               <ChevronRight size={18} />
             </button>
+          ) : status === "reserved" ? (
+            <button
+              onClick={assignTable}
+              disabled={isAssigning}
+              className="transition-all active:scale-90 cursor-pointer px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-md bg-amber-500 hover:bg-amber-600 shadow-amber-500/30"
+            >
+              {isAssigning ? "Asignando..." : "Check-in"}
+            </button>
           ) : (
             <button
               onClick={() => navigate(ROUTES.TABLES.DETAIL(tableId))}
-              className={`transition-all active:scale-90 cursor-pointer px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-md ${
-                status === "payment"
-                  ? "bg-blue-500 hover:bg-blue-600 shadow-blue-500/30"
-                  : "bg-amber-500 hover:bg-amber-600 shadow-amber-500/30"
-              }`}
+              className="transition-all active:scale-90 cursor-pointer px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-md bg-blue-500 hover:bg-blue-600 shadow-blue-500/30"
             >
-              {status === "payment" ? "Cobrar" : "Check-in"}
+              Cobrar
             </button>
           )}
         </div>

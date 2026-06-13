@@ -11,7 +11,7 @@ const HeaderDashboard: React.FC<HeaderDashboardProps> = ({
   children,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300">
+    <header className="sticky top-0 z-20 w-full transition-all duration-300">
       <section className="flex bg-white dark:bg-dark-bg items-center justify-between h-16 lg:h-20 px-4 md:px-6 z-20 border-b border-gray-200/50 dark:border-dark-border/50">
         <button
           onClick={toggleSidebar}

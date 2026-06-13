@@ -61,7 +61,7 @@ export const TicketSidebar = ({
             willChange: "transform",
             backfaceVisibility: "hidden",
           }}
-          className="ticket-hidden lg:ticket-visible fixed inset-0 lg:static lg:inset-auto z-50 w-full lg:w-96 flex flex-col bg-gray-50 dark:bg-dark-bg lg:bg-transparent transition-transform duration-300 ease-out lg:border-l lg:border-gray-200 lg:dark:border-white/5"
+          className="ticket-hidden lg:ticket-visible z-25 lg:z-0 fixed inset-0 lg:static lg:inset-auto w-full lg:w-96 flex flex-col bg-gray-50 dark:bg-dark-bg lg:bg-transparent transition-transform duration-300 ease-out lg:border-l lg:border-gray-200 lg:dark:border-white/5"
         >
           <div className="bg-white dark:bg-dark-card px-4 h-16 border-b border-gray-200 dark:border-white/5 flex justify-between items-center shadow-sm lg:shadow-none">
             <h2 className="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
@@ -143,7 +143,7 @@ export const TicketSidebar = ({
             <div className="h-20 lg:hidden"></div>
           </div>
 
-          <div className="p-4 bg-white dark:bg-dark-card border-t border-gray-200 dark:border-white/5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+          <div className="p-4 bg-white dark:bg-dark-card border-t border-gray-200 dark:border-white/5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
             <div className="space-y-1 mb-3">
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>Subtotal</span>
@@ -165,8 +165,8 @@ export const TicketSidebar = ({
               onClick={onSendToKitchen}
               disabled={isSending || items.length === 0 || isLocked}
               className={`w-full py-3.5 rounded-xl shadow-lg font-bold text-base transition transform active:scale-[0.98] flex items-center justify-center gap-2 mb-2 ${isLocked
-                  ? "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500 cursor-not-allowed shadow-none"
-                  : "bg-keleo-600 hover:bg-keleo-700 text-white shadow-keleo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                ? "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500 cursor-not-allowed shadow-none"
+                : "bg-keleo-600 hover:bg-keleo-700 text-white shadow-keleo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 }`}>
               <Send size={18} />
               {isSending ? "Enviando..." : `Enviar a Cocina (${items.reduce((acc, i) => acc + i.quantity, 0)})`}
@@ -178,11 +178,11 @@ export const TicketSidebar = ({
                 disabled={!sentItems || sentItems.length === 0}
                 className="py-3 bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-white/20 transition flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Receipt size={16} /> Pre-cuenta
+                <Receipt size={16} /> {isLocked ? 'Ver Ticket' : 'Pre-cuenta'}
               </button>
               <button
                 onClick={onCheckout}
-                disabled={!sentItems || sentItems.length === 0}
+                disabled={!sentItems || sentItems.length === 0 || !isLocked}
                 className="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Cobrar

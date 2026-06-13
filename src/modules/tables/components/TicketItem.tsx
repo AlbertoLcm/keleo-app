@@ -75,7 +75,7 @@ const TicketItem = ({
   };
 
   return (
-    <div className={`flex flex-col p-3 rounded-xl bg-white dark:bg-dark-card border-l-4 shadow-sm relative group ${Editable ? "border-keleo-500" : "border-gray-300 dark:border-white/10 opacity-80"}`}>
+    <div className={`flex flex-col p-3 rounded-xl bg-white dark:bg-dark-card shadow-sm relative group ${Editable ? "border-keleo-500" : "border-gray-300 dark:border-white/10 opacity-80"}`}>
       <div className="flex justify-between items-start mb-2">
         <div className="flex gap-3">
           {/* Stepper (Only if Editable) */}
@@ -120,16 +120,16 @@ const TicketItem = ({
                 </p>
               )
             )}
-            
+
             {status && (
-               <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${getStatusColor()}`}>
-                 {getStatusIcon()}
-                 {getStatusLabel()}
-               </p>
+              <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${getStatusColor()}`}>
+                {getStatusIcon()}
+                {getStatusLabel()}
+              </p>
             )}
 
             {Editable && !isEditingNote && (
-              <button 
+              <button
                 onClick={() => setIsEditingNote(true)}
                 className="text-[10px] text-blue-500 font-bold mt-2 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 rounded hover:bg-blue-100 transition flex gap-1 items-center"
               >
@@ -138,11 +138,11 @@ const TicketItem = ({
               </button>
             )}
           </div>
+        </div>
+        <span className="text-sm font-bold text-gray-800 dark:text-white mr-5">
+          ${(price * quantity).toFixed(2)}
+        </span>
       </div>
-      <span className="text-sm font-bold text-gray-800 dark:text-white mr-5">
-        ${(price * quantity).toFixed(2)}
-      </span>
-    </div>
       {Editable && (
         <button onClick={onRemove} className="absolute right-0 top-0 p-2 text-gray-500 hover:text-red-500 transition">
           <X size={18} />

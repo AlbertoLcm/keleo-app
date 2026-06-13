@@ -13,7 +13,6 @@ import {
   Button,
   InputText,
   TypeCardForm,
-  useLockBodyScroll,
 } from "@/modules/shared";
 import api from "@/api/axios";
 import { useParams } from "react-router";
@@ -38,7 +37,6 @@ const NewTableForm: React.FC<NewTableFormProps> = ({
   zones,
   onZoneAdded,
 }) => {
-  useLockBodyScroll();
   const { restaurantId } = useParams();
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -257,11 +255,10 @@ const NewTableForm: React.FC<NewTableFormProps> = ({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, zoneId: zone.id }))
                 }
-                className={`py-2.5 px-3 rounded-xl border text-sm font-bold transition-all truncate ${
-                  formData.zoneId === zone.id
-                    ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
-                    : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
-                }`}
+                className={`py-2.5 px-3 rounded-xl border text-sm font-bold transition-all truncate ${formData.zoneId === zone.id
+                  ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
+                  : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
+                  }`}
               >
                 {zone.name}
               </button>

@@ -49,9 +49,9 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({
   }, [isMenuOpen]);
 
   return (
-    <div className={`bg-white/80 dark:bg-dark-card/80 backdrop-blur-md rounded-2xl shadow-sm border border-l-4 border-t-white/50 border-r-white/50 border-b-white/50 dark:border-t-white/5 dark:border-r-white/5 dark:border-b-white/5 overflow-visible transition duration-300 group ${isActive
-      ? "border-l-green-500 hover:shadow-xl hover:shadow-keleo-500/5"
-      : "border-l-gray-300 dark:border-l-gray-600 hover:shadow-md opacity-75 hover:opacity-100"
+    <div className={`bg-white/80 dark:bg-dark-card/80 backdrop-blur-md rounded-2xl shadow-sm overflow-visible transition duration-300 group ${isActive
+      ? "hover:shadow-xl hover:shadow-keleo-500/5"
+      : "hover:shadow-md opacity-75 hover:opacity-100"
       }`}>
       <div className="p-5">
         <div className="flex items-center gap-4 mb-4">
@@ -100,23 +100,23 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({
               <MessageSquare size={16} />
             </button>
             <div className="relative" ref={menuRef}>
-              <button 
+              <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`w-8 h-8 rounded-lg transition flex items-center justify-center ${isMenuOpen ? 'bg-keleo-50 text-keleo-600 dark:bg-keleo-900/20 dark:text-keleo-400' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-keleo-600'}`}
               >
                 <MoreVertical size={16} />
               </button>
-              
+
               {isMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
-                  <button 
-                    onClick={() => { setIsMenuOpen(false); onEdit?.(id); }} 
+                  <button
+                    onClick={() => { setIsMenuOpen(false); onEdit?.(id); }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition flex items-center gap-2"
                   >
                     <Edit2 size={14} /> Editar Rol
                   </button>
-                  <button 
-                    onClick={() => { setIsMenuOpen(false); onDelete?.(id); }} 
+                  <button
+                    onClick={() => { setIsMenuOpen(false); onDelete?.(id); }}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition flex items-center gap-2"
                   >
                     <Trash2 size={14} /> Eliminar

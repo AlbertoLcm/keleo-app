@@ -107,7 +107,7 @@ export default function RestaurantsPage() {
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12 mt-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              ¡Hola de nuevo, {user?.name}! <span className="inline-block animate-wave origin-[70%_70%]">👋</span>
+              ¡Hola de nuevo, {user?.name}!
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-lg">
               {isCollaboratorOnly ? "Selecciona un espacio de trabajo para comenzar." : "Selecciona un espacio de trabajo para comenzar."}

@@ -26,12 +26,14 @@ export const ProductGrid = memo(({ products, isLoading, onAddToCart, isLocked }:
   return (
     <GridCardsProducts>
       {products.map((product) => (
+        console.log(product),
         <CardProduct
           key={product.id}
           name={product.name}
           description={product.description}
           price={product.price}
           productId={product.id}
+          image={product.image}
           onClick={() => onAddToCart(product)}
           isLocked={isLocked}
         />

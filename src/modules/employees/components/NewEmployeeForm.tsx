@@ -8,7 +8,6 @@ import {
 import {
   Button,
   InputText,
-  useLockBodyScroll,
 } from "@/modules/shared";
 import { useParams } from "react-router";
 import { createEmployee } from "../services/employee.service";
@@ -31,7 +30,6 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
   onCancel,
   onUpdateEmployees,
 }) => {
-  useLockBodyScroll();
   const { restaurantId } = useParams();
 
   const [formData, setFormData] = useState<CreateEmployeeDto>({
@@ -152,8 +150,8 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({
                 setFormData((prev) => ({ ...prev, role: role.id }))
               }
               className={`py-2.5 px-4 rounded-xl border text-sm font-bold transition-all truncate ${formData.role === role.id
-                  ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
-                  : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
+                ? "bg-keleo-600 border-keleo-600 text-white shadow-md shadow-keleo-600/20"
+                : "bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-keleo-400 hover:text-keleo-600 dark:hover:text-keleo-400"
                 }`}
             >
               {role.label}

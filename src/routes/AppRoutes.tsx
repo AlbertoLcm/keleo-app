@@ -17,6 +17,7 @@ import { SettingsPage } from "@/modules/settings";
 import ScrollToTop from "@/modules/shared/components/ScrollTop";
 import { OrdersPage, OrderDetailPage } from "@/modules/orders";
 import { ProfilePage, SubscriptionPage, GlobalSettingsPage } from "@/modules/user";
+import { CashRegisterPage } from "@/modules/cash-register";
 
 export default function AppRoutes() {
   return (
@@ -174,6 +175,14 @@ export default function AppRoutes() {
               </RoleProtectedRoute>
             } />
           </Route>
+          <Route
+            path={ROUTES.CASH_REGISTER.INDEX}
+            element={
+              <RoleProtectedRoute allowedRoles={['owner', 'admin', 'manager', 'cashier']}>
+                <CashRegisterPage />
+              </RoleProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

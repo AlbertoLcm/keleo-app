@@ -18,3 +18,33 @@ export const getProducts = async (
   });
   return data;
 };
+
+export interface UpdateProductPayload {
+  name?: string;
+  description?: string;
+  price?: number;
+  available?: boolean;
+  categoryId?: string;
+  image?: string;
+}
+
+export const updateProduct = async (
+  id: string,
+  restaurantId: string,
+  payload: UpdateProductPayload
+): Promise<Product> => {
+  const { data } = await api.patch<Product>(`products/${id}`, payload, {
+    params: { restaurantId },
+  });
+  return data;
+};
+
+export const deleteProduct = async (
+  id: string,
+  restaurantId: string
+): Promise<{ message: string }> => {
+  const { data } = await api.delete<{ message: string }>(`products/${id}`, {
+    params: { restaurantId },
+  });
+  return data;
+};

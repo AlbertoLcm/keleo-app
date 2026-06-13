@@ -6,14 +6,83 @@ import { getInitialsString } from "@/utils/getInitialsString";
 import { useNavigate } from "react-router";
 import { ROUTES } from "@/routes/paths";
 import { useTheme } from "@/modules/shared/contexts/ThemeContext";
+import { getNotificationsPreference, setNotificationsPreference, sendWebNotification } from "@/utils/notifications";
+import { sileo } from "sileo";
 
 export default function GlobalSettingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(() => getNotificationsPreference());
 
   const fullName = `${user?.name || ""} ${user?.lastname || ""}`.trim();
+
+  const handleToggleNotifications = async () => {
+    const newValue = !notifications;
+
+    if (newValue) {
+      if (!("Notification" in window)) {
+        sileo.show({
+          title: "No compatible",
+          position: "top-center",
+          description: "Tu navegador no soporta notificaciones de escritorio.",
+          type: "warning",
+          duration: 3000,
+        });
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        sileo.show({
+          title: "Permiso denegado",
+          position: "top-center",
+          description: "Las notificaciones están bloqueadas en tu navegador. Por favor, habilítalas en la configuración de tu navegador.",
+          type: "warning",
+          duration: 4000,
+        });
+        return;
+      }
+
+      if (Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          sileo.show({
+            title: "Permiso denegado",
+            position: "top-center",
+            description: "No se otorgó permiso para mostrar notificaciones de escritorio.",
+            type: "warning",
+            duration: 3000,
+          });
+          return;
+        }
+      }
+
+      setNotificationsPreference(true);
+      setNotifications(true);
+      sileo.show({
+        title: "Notificaciones activadas",
+        position: "top-center",
+        description: "Recibirás alertas de escritorio al instante.",
+        type: "success",
+        duration: 3000,
+      });
+
+      sendWebNotification("Keleo", {
+        body: "¡Notificaciones de escritorio activadas correctamente!",
+      });
+    } else {
+      setNotificationsPreference(false);
+      setNotifications(false);
+      sileo.show({
+        title: "Notificaciones desactivadas",
+        position: "top-center",
+        description: "Ya no recibirás alertas de escritorio.",
+        type: "info",
+        duration: 3000,
+      });
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg transition-colors duration-200 pb-12">
@@ -155,8 +224,8 @@ export default function GlobalSettingsPage() {
                   <button
                     onClick={() => setTheme("light")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition ${theme === "light"
-                        ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
-                        : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       }`}
                   >
                     <Sun size={13} />
@@ -165,8 +234,8 @@ export default function GlobalSettingsPage() {
                   <button
                     onClick={() => setTheme("dark")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition ${theme === "dark"
-                        ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
-                        : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       }`}
                   >
                     <Moon size={13} />
@@ -175,8 +244,8 @@ export default function GlobalSettingsPage() {
                   <button
                     onClick={() => setTheme("system")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition ${theme === "system"
-                        ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
-                        : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      ? "bg-white dark:bg-white/15 shadow-sm text-gray-900 dark:text-white font-bold"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       }`}
                   >
                     <Monitor size={13} />
@@ -202,7 +271,7 @@ export default function GlobalSettingsPage() {
                 </div>
 
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={notifications} onChange={() => setNotifications(!notifications)} />
+                  <input type="checkbox" className="sr-only peer" checked={notifications} onChange={handleToggleNotifications} />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-keleo-500"></div>
                 </label>
               </div>

@@ -78,6 +78,7 @@ export const SharedPosLayout = ({
     setIsLoadingProducts(true);
     try {
       const data = await getProducts(id, catId, search);
+      console.log(data)
       setProducts(data);
     } catch (error) {
       console.error("Error loading products:", error);
@@ -187,6 +188,7 @@ export const SharedPosLayout = ({
           onConfirm={handleRequestPayment}
           orders={ordersDetails ?? []}
           tableName={accountName}
+          isLocked={status === "payment"}
         />
       </section>
     </LazyMotion>

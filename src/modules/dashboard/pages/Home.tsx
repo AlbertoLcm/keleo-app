@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   Armchair,
   BanknoteArrowUp,
@@ -70,6 +71,43 @@ const Dashboard: React.FC = () => {
 
     fetchStats();
   }, [restaurantId]);
+=======
+import { ChevronRight } from "lucide-react";
+import { LoadingScreen, StatusBadge, useHeaderAction } from "@/modules/shared";
+import { useEffect } from "react";
+
+// Hook
+import { useDashboard } from "../hooks/useDashboard";
+
+// Components
+import DashboardStatsRow from "../components/DashboardStatsRow";
+import QuickActionsPanel from "../components/QuickActionsPanel";
+import SalesChart from "../components/SalesChart";
+import RecentOrdersTable from "../components/RecentOrdersTable";
+import TopItemsList from "../components/TopItemsList";
+import ReserveModal from "../components/ReserveModal";
+
+const Dashboard: React.FC = () => {
+  const { updateActionHeader } = useHeaderAction();
+
+  const {
+    stats,
+    isLoading,
+    // Modals
+    isReserveModalOpen,
+    setIsReserveModalOpen,
+    // Reserve
+    reserveForm,
+    setReserveForm,
+    isReserving,
+    tablesList,
+    handleSubmitReserve,
+    // Quick actions
+    handleNewOrder,
+    handleCloseBox,
+    handleZReport,
+  } = useDashboard();
+>>>>>>> develop
 
   useEffect(() => {
     updateActionHeader(
@@ -107,16 +145,24 @@ const Dashboard: React.FC = () => {
     );
 
     return () => updateActionHeader(null);
+<<<<<<< HEAD
   }, []);
 
   if (isLoading || !stats) {
     return (
       <LoadingScreen />
     );
+=======
+  }, [updateActionHeader]);
+
+  if (isLoading || !stats) {
+    return <LoadingScreen />;
+>>>>>>> develop
   }
 
   return (
     <>
+<<<<<<< HEAD
       <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="w-[85vw] sm:w-auto shrink-0 snap-center">
           <StatCard
@@ -240,10 +286,24 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </div>
+=======
+      <DashboardStatsRow stats={stats} />
+
+      {/* ROW 2: Graph & Shortcuts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <QuickActionsPanel
+          onNewOrder={handleNewOrder}
+          onReserve={() => setIsReserveModalOpen(true)}
+          onCloseBox={handleCloseBox}
+          onZReport={handleZReport}
+        />
+        <SalesChart chartData={stats.chartData} />
+>>>>>>> develop
       </div>
 
       {/* ROW 3: Tables & Top Selling */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+<<<<<<< HEAD
         {/* Active Orders Table */}
         <div className="lg:col-span-2 bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-white/50 dark:border-white/5 overflow-hidden">
           <div className="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
@@ -344,6 +404,21 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+=======
+        <RecentOrdersTable orders={stats.recentOrders} />
+        <TopItemsList items={stats.topItems} />
+      </div>
+
+      <ReserveModal
+        isOpen={isReserveModalOpen}
+        onClose={() => setIsReserveModalOpen(false)}
+        form={reserveForm}
+        onChange={setReserveForm}
+        tablesList={tablesList}
+        isSubmitting={isReserving}
+        onSubmit={handleSubmitReserve}
+      />
+>>>>>>> develop
     </>
   );
 };

@@ -9,6 +9,7 @@ import {
   Users,
   X,
   ShoppingBag,
+  Vault,
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import KeleoLogo from "./LogoKeleo";
@@ -20,10 +21,9 @@ interface SideBarProps {
 }
 
 const navLinkClasses = ({ isActive }: { isActive: Boolean }): string =>
-  `flex items-center gap-3 px-3 py-2.5 border-keleo-100 dark:border-transparent ${
-    isActive
-      ? "bg-keleo-50/80 dark:bg-keleo-900/30 text-keleo-700 dark:text-keleo-300 rounded-xl transition font-medium border"
-      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white rounded-xl transition font-medium group"
+  `flex items-center gap-3 px-3 py-2.5 border-keleo-100 dark:border-transparent ${isActive
+    ? "bg-keleo-50/80 dark:bg-keleo-900/30 text-keleo-700 dark:text-keleo-300 rounded-xl transition font-medium border"
+    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white rounded-xl transition font-medium group"
   }`;
 
 const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -32,6 +32,7 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
   const isOwnerOrAdmin = role === 'owner' || role === 'admin';
   const isManagerOrAbove = isOwnerOrAdmin || role === 'manager';
   const isKitchenOrAbove = isManagerOrAbove || role === 'kitchen';
+  const canAccessCashRegister = isManagerOrAbove || role === 'cashier';
 
   return (
     <aside
@@ -69,12 +70,12 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
         </NavLink>
 
         <NavLink to={ROUTES.TABLES.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-         <Grid2x2 />
+          <Grid2x2 />
           <span>Mesas</span>
         </NavLink>
 
         <NavLink to={ROUTES.ORDERS.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
-         <ShoppingBag />
+          <ShoppingBag />
           <span>Órdenes Directas</span>
         </NavLink>
 
@@ -100,6 +101,13 @@ const SideBar: React.FC<SideBarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
               <Users />
               <span>Empleados</span>
             </NavLink>
+
+            {canAccessCashRegister && (
+              <NavLink to={ROUTES.CASH_REGISTER.INDEX} className={navLinkClasses} onClick={() => setIsSidebarOpen(false)}>
+                <Vault />
+                <span>Cierre de Caja</span>
+              </NavLink>
+            )}
           </>
         )}
 
